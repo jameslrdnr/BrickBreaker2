@@ -193,7 +193,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
             if(getInputList().contains(ob) == false)
                 getInputList().add(ob);
         }
-        
+        //removes all keys that have been released
         for(int ob : getRemoveList()){
             if(getInputList().contains(ob) == true)
                 for(int i = 0; i < getRemoveList().size(); i++){
