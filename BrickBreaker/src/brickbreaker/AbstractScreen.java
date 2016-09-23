@@ -197,8 +197,9 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         for(int ob : getRemoveList()){
             if(getInputList().contains(ob) == true)
                 for(int i = 0; i < getRemoveList().size(); i++){
-                  if(getRemoveList().get(i) == ob)
-                        getRemoveList().remove(i);
+                    if(getRemoveList().get(i) == ob){
+                        getInputList().remove(i);
+                  }
             }
         }
         
@@ -218,11 +219,8 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     @Override
     public void keyReleased(KeyEvent ke){
         System.out.println("*** : " + ke.getKeyCode());
-        if(getRemoveList().contains(ke.getKeyCode()) == true)
-            for(int i = 0; i < getRemoveList().size(); i++){
-                if(getRemoveList().get(i) == ke.getKeyCode())
-                    getRemoveList().remove(i);
-            }
+        if(getRemoveList().contains(ke.getKeyCode()) == false)
+            getRemoveList().add(ke.getKeyCode());
     }
     
     //ScreenObject ArrayList manipulating

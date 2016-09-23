@@ -123,7 +123,6 @@ public class TitleScreen extends AbstractScreen{
             //gives input to screen objects
             for (AbstractScreenObject ob : getObjectsArray()) {
                 ob.inputHandler(getInputMethod(), key);
-                System.out.println(key);
             }
 
             //handles input for the screen depending on input method
