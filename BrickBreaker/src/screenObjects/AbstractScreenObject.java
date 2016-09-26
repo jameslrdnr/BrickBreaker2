@@ -28,6 +28,7 @@ public abstract class AbstractScreenObject {
     private final boolean collision;
     private Color color;
     private boolean isVisible, acceptingInput; 
+    private int inputDelay;
     private int yMovementMultiplier, xMovementMultiplier, position, maxPosition;
     
     //init constructors
@@ -59,7 +60,100 @@ public abstract class AbstractScreenObject {
         bY = y + height;
         collision = false;
         acceptingInput = false;
-    }    
+        inputDelay = 0;
+    }
+    
+    //movement methods
+    //------------------------------------------------------------------
+    public abstract void move();
+    
+    public void moveX(float dX){
+        setX(getX() + dX * xMovementMultiplier);
+    }
+    
+    public void moveY(float dY){
+        setY(getY() + dY * yMovementMultiplier);
+    }
+    
+    //object input handler methods
+    //------------------------------------------------------------------
+    //this is the method the screen calls
+    public void inputHandler(String inputMethod, int key){
+        if(getAcceptingInput()){
+            handleInput(inputMethod, key);
+        }
+    }
+    //object specific input logic
+    public abstract void handleInput(String inputMethod, int key);
+    
+    //object logic methods
+    //------------------------------------------------------------------
+    public abstract void runLogic();
+    
+    
+    //collision detection methods
+    //------------------------------------------------------------------
+    private boolean collidesWith(AbstractScreenObject ob){
+        
+        float otherX = ob.getX();
+        float otherY = ob.getY();
+        int otherWidth = ob.getWidth();
+        int otherHeight = ob.getHeight();
+        
+        //checks if it can collide at all
+        if(collision == false){
+            return false;
+        }
+        //checks to see if it is on same Y level
+        if(otherY+otherHeight >= y && otherY <= y+height){
+            //checks to see if it is in the same X level
+            if(otherX+width >= x && otherX <= x+width){
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    //find which face the other object hit, then return a char representing it (ie: 'R','L','T','B')
+    public char willCollideWithFace(AbstractScreenObject ob){
+        
+        float otherX = ob.getX();
+        float otherY = ob.getY();
+        float otherDeltaX = ob.getDeltaX();
+        float otherDeltaY = ob.getDeltaY(); 
+        int otherWidth = ob.getWidth();
+        int otherHeight = ob.getHeight();
+        float otherRX = otherX + otherWidth;
+        float otherBY = otherY + otherHeight;
+        
+        //checks if it can even collide
+        if(collision == false)
+            return ' ';
+        
+        //checks for top collision
+        if((otherBY+otherDeltaY >= y-5 && otherBY+otherDeltaY <= y+25) && (otherRX+otherDeltaX >= x && otherX+otherDeltaX <= rX)){
+            return 'T';
+        }
+        //check for bottom
+        if((otherY+otherDeltaY >= bY+5 && otherY+otherDeltaY <= bY-25) && (otherRX+otherDeltaX >= x && otherX+otherDeltaX <= rX)){
+            return 'B';
+        }
+        //check for right
+        if((otherBY+otherDeltaY >= y && otherY+otherDeltaY <= bY) && (otherX+otherDeltaX >= rX-25 && otherX+otherDeltaX <= rX+5)){
+            return 'R';
+        }
+        //check for left
+        if((otherBY+otherDeltaY >= y && otherY+otherDeltaY <= bY) && (otherRX+otherDeltaX >= x-5 && otherX+otherDeltaX <= x+25)){
+            return 'L';
+        }        
+        return ' ';
+    }
+    
+    //graphics methods
+    //------------------------------------------------------------------
+    public abstract void drawObject(Graphics g);
+    
+    
     
     //getter/setter methods here
     //------------------------------------------------------------------
@@ -178,97 +272,13 @@ public abstract class AbstractScreenObject {
     public void setMaxPosition(int maxPosition) {
         this.maxPosition = maxPosition;
     }
-    
-    //movement methods
-    //------------------------------------------------------------------
-    public abstract void move();
-    
-    public void moveX(float dX){
-        setX(getX() + dX * xMovementMultiplier);
+
+    public int getInputDelay() {
+        return inputDelay;
     }
-    
-    public void moveY(float dY){
-        setY(getY() + dY * yMovementMultiplier);
-    }
-    
-    //object input handler methods
-    //------------------------------------------------------------------
-    //this is the method the screen calls
-    public void inputHandler(String inputMethod, int key){
-        if(getAcceptingInput()){
-            handleInput(inputMethod, key);
-        }
-    }
-    //object specific input logic
-    public abstract void handleInput(String inputMethod, int key);
-    
-    //object logic methods
-    //------------------------------------------------------------------
-    public abstract void runLogic();
-    
-    
-    //collision detection methods
-    //------------------------------------------------------------------
-    private boolean collidesWith(AbstractScreenObject ob){
-        
-        float otherX = ob.getX();
-        float otherY = ob.getY();
-        int otherWidth = ob.getWidth();
-        int otherHeight = ob.getHeight();
-        
-        //checks if it can collide at all
-        if(collision == false){
-            return false;
-        }
-        //checks to see if it is on same Y level
-        if(otherY+otherHeight >= y && otherY <= y+height){
-            //checks to see if it is in the same X level
-            if(otherX+width >= x && otherX <= x+width){
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    //find which face the other object hit, then return a char representing it (ie: 'R','L','T','B')
-    public char willCollideWithFace(AbstractScreenObject ob){
-        
-        float otherX = ob.getX();
-        float otherY = ob.getY();
-        float otherDeltaX = ob.getDeltaX();
-        float otherDeltaY = ob.getDeltaY(); 
-        int otherWidth = ob.getWidth();
-        int otherHeight = ob.getHeight();
-        float otherRX = otherX + otherWidth;
-        float otherBY = otherY + otherHeight;
-        
-        //checks if it can even collide
-        if(collision == false)
-            return ' ';
-        
-        //checks for top collision
-        if((otherBY+otherDeltaY >= y-5 && otherBY+otherDeltaY <= y+25) && (otherRX+otherDeltaX >= x && otherX+otherDeltaX <= rX)){
-            return 'T';
-        }
-        //check for bottom
-        if((otherY+otherDeltaY >= bY+5 && otherY+otherDeltaY <= bY-25) && (otherRX+otherDeltaX >= x && otherX+otherDeltaX <= rX)){
-            return 'B';
-        }
-        //check for right
-        if((otherBY+otherDeltaY >= y && otherY+otherDeltaY <= bY) && (otherX+otherDeltaX >= rX-25 && otherX+otherDeltaX <= rX+5)){
-            return 'R';
-        }
-        //check for left
-        if((otherBY+otherDeltaY >= y && otherY+otherDeltaY <= bY) && (otherRX+otherDeltaX >= x-5 && otherX+otherDeltaX <= x+25)){
-            return 'L';
-        }        
-        return ' ';
-    }
-    
-    //graphics methods
-    //------------------------------------------------------------------
-    public void drawObject(Graphics g){
-        System.out.println(getClass().getName() + " : does not have draw method overridden, this is default message");
+
+    public void setInputDelay(int inputDelay) {
+        this.inputDelay = inputDelay;
     }
     
     

@@ -7,20 +7,10 @@ package brickbreaker;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.im.spi.InputMethod;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.text.JTextComponent;
 import screenObjects.*;
 
 /**
@@ -66,6 +56,8 @@ public class TitleScreen extends AbstractScreen{
     public void runLogic() {
         timeAtScreen = System.nanoTime();
         handleInput(getInputList());
+        getDebug().setMouseX(getMouseX());
+        getDebug().setMouseY(getMouseY());
         
         //runs all logic for screen objects
         runScreenObjectLogic();
@@ -84,15 +76,15 @@ public class TitleScreen extends AbstractScreen{
     public void drawGame(Graphics g) {
         setBackground(backroundColor);
         
+        if(getDebug().getIsVisible())
+            getDebug().drawObject(g);
+        
         
         drawTitleScreenText(g);
         
         
         //draws all Screen Objects
         drawScreenObjects(g);
-        
-        if(getEnableMasterDebug())
-            masterDebug(g);
         
     }
     
@@ -120,6 +112,10 @@ public class TitleScreen extends AbstractScreen{
         //copies input list to new list so it is not changed as it parses the input
         
         for(int key : inputList){
+            
+            //gives input to debug
+            getDebug().handleInput(getInputMethod(), key);
+            
             //gives input to screen objects
             for (AbstractScreenObject ob : getObjectsArray()) {
                 ob.inputHandler(getInputMethod(), key);
@@ -131,10 +127,6 @@ public class TitleScreen extends AbstractScreen{
                 //handles all default input for the screen
                 case "default":
                     switch (key) {
-                        //debug keybind
-                        case KeyEvent.VK_F3:
-                            setEnableMasterDebug(!getEnableMasterDebug());
-                            break;
 
                         case KeyEvent.VK_ENTER:
                             for (AbstractScreenObject ob : getObjectsArray()) {
@@ -156,13 +148,8 @@ public class TitleScreen extends AbstractScreen{
                                             setNextScreen('Q');
                                             break;
                                     }
-
                                 }
                             }
-
-                        case KeyEvent.VK_0:
-                            System.out.println("HI");
-
                     }
 
                     break;
@@ -195,7 +182,5 @@ public class TitleScreen extends AbstractScreen{
 
     @Override
     public void mouseDragged(MouseEvent me) {
-        setMouseX(me.getX());
-        setMouseY(me.getY());
     }
 }

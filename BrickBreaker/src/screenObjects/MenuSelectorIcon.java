@@ -35,6 +35,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
         setPosition(0);
         setMaxPosition(maxPosition);
         
+        setInputDelay(30);
         
     }
     

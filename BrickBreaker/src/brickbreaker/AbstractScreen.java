@@ -13,8 +13,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.MouseInputListener;
+import screenObjects.Debug;
 
 
 /**
@@ -26,11 +25,11 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     private final int defaultScreenWidth = 800;
     private final int defaultScreenHeight = 600;
     private int mouseX, mouseY;
-    private MouseInputAdapter mouseListener;
-    private Font debugFont;
     private BufferedImage back;
     private boolean enableMasterDebug;
     private char nextScreen;
+    //adds debug object
+    private Debug debug = new Debug(this);
     
     
     //use this to determine if you are in a menu or the game and what controls to use because of that
@@ -56,8 +55,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         removeList = new ArrayList<Integer>();
         
         //adds debug variables
-        debugFont = new Font(Font.DIALOG, Font.PLAIN, 12);
-        enableMasterDebug = false;
+        debug.setInputDelay(30);
         
         nextScreen = ' ';
         
@@ -77,8 +75,6 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     //ScreenObject methods
     //------------------------------------------------------------------
-    
-    
     
     //draws screen objects in the ScreenObject ArrayList
     public void drawScreenObjects(Graphics g){
@@ -126,6 +122,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         //clears screen
         gMemory.setColor(Color.BLACK);
         gMemory.fillRect(0,0,getWidth(),getHeight());
+        //ACTUALLY DRAWS EVERYTHING
         //draws using new graphics pointer
         drawGame(gMemory);
         //passes the image from memory to graphics card to handle
@@ -149,36 +146,6 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         
     }
     
-    //@@@
-    //graphic debug methods
-    //@@@
-    //graphics debug methods
-    
-    public void masterDebug(Graphics g){
-        
-        //get current game params
-        Font gameFont = g.getFont();
-        Color gameColor = g.getColor();
-        
-        //set new params
-        g.setFont(debugFont);
-        g.setColor(Color.ORANGE);
-        
-        //call specific debug methods
-        mouseTrackerDebug(g, 10, 10);
-        
-        //set game params back the way it was
-        g.setFont(gameFont);
-        g.setColor(gameColor);
-        
-    }
-    
-    public void mouseTrackerDebug(Graphics g, int x, int y){
-        
-        g.drawString("MouseX Position : " + mouseX, x, y);
-        g.drawString("MouseY Position : " + mouseY, x, y + 10);
-        
-    }
     
     //input functions
     //------------------------------------------------------------------
@@ -306,8 +273,14 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     public void setRemoveList(ArrayList<Integer> removeList) {
         this.removeList = removeList;
     }
-    
-    
+
+    public Debug getDebug() {
+        return debug;
+    }
+
+    public void setDebug(Debug debug) {
+        this.debug = debug;
+    }
     
     
 }
