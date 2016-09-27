@@ -35,7 +35,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
         setPosition(0);
         setMaxPosition(maxPosition);
         
-        setInputDelay(30);
+        setInputDelay(4);
         
     }
     
@@ -90,6 +90,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
                             setPosition(getPosition() + 1);
                             setIsVisible(true);
                             blinkTimer = 0;
+                            delayInput(getInputDelay());
                         }
                         break;
                     case KeyEvent.VK_UP:
@@ -99,6 +100,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
                             setPosition(getPosition() - 1);
                             setIsVisible(true);
                             blinkTimer = 0;
+                            delayInput(getInputDelay());
                         }
                         break;
                     

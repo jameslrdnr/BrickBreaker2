@@ -31,6 +31,7 @@ public class Debug extends AbstractScreenObject{
         
         setAcceptingInput(true);
         keyListener = ks;
+        setInputDelay(5);
     }
     
 
@@ -40,14 +41,20 @@ public class Debug extends AbstractScreenObject{
 
     @Override
     public void handleInput(String inputMethod, int key) {
-        switch(inputMethod){
-            case "default" : 
-                if(key == KeyEvent.VK_F3){
-                    System.out.println("here");
-                    setIsVisible(!getIsVisible());
-                    setAcceptingInput(false);
-                }
-                break;
+        if(getAcceptingInput()){
+            switch (inputMethod) {
+                case "default":
+                    if (key == KeyEvent.VK_F3) {
+                        setIsVisible(!getIsVisible());
+                        delayInput(getInputDelay());
+                        System.out.println(getDelayInput());
+                    }
+                    if(key == KeyEvent.VK_0){
+                        System.out.println(getDelayInput());
+                        System.out.println(getInputFrameCounter());
+                    }
+                    break;
+            }
         }
     }
 

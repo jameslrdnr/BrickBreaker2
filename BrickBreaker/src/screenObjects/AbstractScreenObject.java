@@ -27,8 +27,8 @@ public abstract class AbstractScreenObject {
     private int width, height;
     private final boolean collision;
     private Color color;
-    private boolean isVisible, acceptingInput; 
-    private int inputDelay;
+    private boolean isVisible, acceptingInput, delayInput; 
+    private int inputDelay, inputFrameCounter;
     private int yMovementMultiplier, xMovementMultiplier, position, maxPosition;
     
     //init constructors
@@ -61,6 +61,7 @@ public abstract class AbstractScreenObject {
         collision = false;
         acceptingInput = false;
         inputDelay = 0;
+        delayInput = false;
     }
     
     //movement methods
@@ -77,12 +78,30 @@ public abstract class AbstractScreenObject {
     
     //object input handler methods
     //------------------------------------------------------------------
+    
     //this is the method the screen calls
     public void inputHandler(String inputMethod, int key){
+        //checks to see if accepting input at all
         if(getAcceptingInput()){
-            handleInput(inputMethod, key);
+            //checks to see if input is delayed
+            if(delayInput){
+                inputFrameCounter--;
+                //checks to see if all delayed frames have been parsed thorugh
+                if(inputFrameCounter <= 0)
+                    delayInput = false;
+            }
+            else{
+                handleInput(inputMethod, key);
+            }
         }
     }
+    
+    //delayed input method
+    public void delayInput(int time){
+        inputFrameCounter = time;
+        delayInput = true;
+    }
+    
     //object specific input logic
     public abstract void handleInput(String inputMethod, int key);
     
@@ -279,6 +298,22 @@ public abstract class AbstractScreenObject {
 
     public void setInputDelay(int inputDelay) {
         this.inputDelay = inputDelay;
+    }
+
+    public boolean getDelayInput() {
+        return delayInput;
+    }
+
+    public void setDelayInput(boolean delayInput) {
+        this.delayInput = delayInput;
+    }
+
+    public int getInputFrameCounter() {
+        return inputFrameCounter;
+    }
+
+    public void setInputFrameCounter(int inputFrameCounter) {
+        this.inputFrameCounter = inputFrameCounter;
     }
     
     

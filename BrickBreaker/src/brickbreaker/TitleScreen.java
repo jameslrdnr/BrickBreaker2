@@ -114,7 +114,7 @@ public class TitleScreen extends AbstractScreen{
         for(int key : inputList){
             
             //gives input to debug
-            getDebug().handleInput(getInputMethod(), key);
+            getDebug().inputHandler(getInputMethod(), key);
             
             //gives input to screen objects
             for (AbstractScreenObject ob : getObjectsArray()) {
