@@ -21,8 +21,14 @@ public class InstructionScreen extends AbstractScreen{
 Font InstructionFont = new Font(Font.MONOSPACED, Font.BOLD, 20);
 Font InstructionTitleFont = new Font(Font.MONOSPACED, Font.BOLD, 50);
 
+    public InstructionScreen(){
+        super();
+    }
+
     @Override
     void runLogic() {
+        
+        handleInput(getInputList());
         
     }
 
@@ -55,6 +61,12 @@ Font InstructionTitleFont = new Font(Font.MONOSPACED, Font.BOLD, 50);
 
     @Override
     public void specificInput(ArrayList<Integer> inputList) {
+        
+        for( int key : inputList){
+            if(key == KeyEvent.VK_ESCAPE){
+                setNextScreen('T');
+            }
+        }
     }
     
 }

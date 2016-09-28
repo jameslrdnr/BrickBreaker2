@@ -75,20 +75,43 @@ public class BrickBreakerMain extends JFrame {
                     //play case
                     case 'P' :
                         currentScreen = new PlayScreen();
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
                         break;
                     case 'I' : 
                         currentScreen = new InstructionScreen();
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
                         break;
                     case 'H' :
-                        //currentScreen = new HighScoresScreen();
+                        currentScreen = new HighScoresScreen(10);
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
                         break;
                     case 'O' :
-                        System.out.println("This");
+                        currentScreen = new OptionScreen();
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
                         break;
                     case 'Q' :
                         setIsPlaying(false);
                         setVisible(false);
                         dispose();
+                        break;
+                    case 'T' :
+                        currentScreen = new TitleScreen();
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
                         break;
                     default : 
                         System.out.println("Unspecified screen switch, fix this in brick breaker main");
