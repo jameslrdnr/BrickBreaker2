@@ -84,22 +84,26 @@ public abstract class AbstractScreenObject {
         //checks to see if accepting input at all
         if(getAcceptingInput()){
             //checks to see if input is delayed
-            if(delayInput){
-                inputFrameCounter--;
-                //checks to see if all delayed frames have been parsed thorugh
-                if(inputFrameCounter <= 0)
-                    delayInput = false;
-            }
-            else{
+            if(delayInput == false){
                 handleInput(inputMethod, key);
             }
         }
     }
     
-    //delayed input method
+    //delayed input methods
     public void delayInput(int time){
         inputFrameCounter = time;
         delayInput = true;
+    }
+    
+    public void delayedInputLogicManager(){
+        if (delayInput == true) {
+            inputFrameCounter--;
+        }
+        //checks to see if all delayed frames have been parsed thorugh
+        if (inputFrameCounter <= 0) {
+            delayInput = false;
+        }
     }
     
     //object specific input logic

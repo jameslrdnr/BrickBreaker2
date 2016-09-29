@@ -86,6 +86,9 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     }
     //runs all the screen object logic methods
     public void runScreenObjectLogic(){
+        
+        getDebug().runLogic();
+        
         for(AbstractScreenObject ob : getObjectsArray()){
             ob.runLogic();
         }
@@ -150,9 +153,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     //input functions
     //------------------------------------------------------------------
     
-    public void specificInput(ArrayList<Integer> inputList){
-        
-    }
+    public abstract void specificInput(ArrayList<Integer> inputList);
     
     public void handleInput(ArrayList<Integer> inputList){
         //adds all the new input keys to the list of currently pressed keys

@@ -43,6 +43,8 @@ public class MenuSelectorIcon extends AbstractScreenObject {
     @Override
     public void runLogic(){
         
+        delayedInputLogicManager();
+        
         //blinks the selector if blinking == true
         if(blinking){
             if(blinkTimer >= blinkTime){
