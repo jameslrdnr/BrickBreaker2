@@ -8,6 +8,7 @@ package brickbreaker;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class TitleScreen extends AbstractScreen{
     
     
     @Override
-    public void drawGame(Graphics g) {
+    public void drawGame(Graphics2D g) {
         setBackground(backroundColor);
         
         if(getDebug().getIsVisible())
@@ -88,7 +89,7 @@ public class TitleScreen extends AbstractScreen{
         
     }
     
-    public void drawTitleScreenText(Graphics g){
+    public void drawTitleScreenText(Graphics2D g){
         Font currentFont = g.getFont();
         Font normalFont = new Font(Font.MONOSPACED, Font.BOLD, 16);
         Font titleFont = new Font(Font.MONOSPACED, Font.BOLD, 32);

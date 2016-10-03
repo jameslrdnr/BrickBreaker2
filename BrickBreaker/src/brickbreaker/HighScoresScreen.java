@@ -75,7 +75,7 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
     }
 
     @Override
-    public void drawGame(Graphics g) {
+    public void drawGame(Graphics2D g) {
         
         //Make a black background to draw onto
         g.setColor(Color.BLACK);

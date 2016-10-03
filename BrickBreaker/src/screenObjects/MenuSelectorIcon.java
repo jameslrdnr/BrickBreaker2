@@ -7,6 +7,7 @@ package screenObjects;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
 /**
@@ -35,7 +36,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
         setPosition(0);
         setMaxPosition(maxPosition);
         
-        setInputDelay(5);
+        setInputDelay(6);
         
     }
     
@@ -68,7 +69,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
 
     //draw method
     @Override
-    public void drawObject(Graphics g) {
+    public void drawObject(Graphics2D g) {
         
         g.fillRect((int)getX(), (int)getY(), getWidth(), getHeight());
         

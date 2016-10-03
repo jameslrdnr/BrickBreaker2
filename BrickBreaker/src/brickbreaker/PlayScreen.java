@@ -6,6 +6,7 @@
 package brickbreaker;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class PlayScreen extends AbstractScreen {
     }
 
     @Override
-    void drawGame(Graphics g) {
+    void drawGame(Graphics2D g) {
         
     }
 

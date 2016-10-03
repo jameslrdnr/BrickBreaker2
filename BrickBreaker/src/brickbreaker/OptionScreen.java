@@ -5,12 +5,15 @@
  */
 package brickbreaker;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import screenObjects.AbstractScreenObject;
+import screenObjects.BorderLayout;
 
 /**
  *
@@ -19,10 +22,16 @@ import screenObjects.AbstractScreenObject;
 public class OptionScreen extends AbstractScreen {
     
     private Font normalFont = new Font(Font.MONOSPACED, Font.BOLD, 16);
+    private AbstractScreenObject tempOb;
     
     public OptionScreen(){
         super();
         setInputMethod("default");
+        setFont(normalFont);
+        
+        tempOb = new BorderLayout(150, 150, 30, 30);
+        getObjectsArray().add(tempOb);
+        
     }
 
     @Override
@@ -31,20 +40,25 @@ public class OptionScreen extends AbstractScreen {
         //debug info
         getDebug().setMouseX(getMouseX());
         getDebug().setMouseY(getMouseY());
-        getDebug().runLogic();
+        
+        runScreenObjectLogic();
+        
+        moveScreenObjects();
         
     }
 
     @Override
-    void drawGame(Graphics g) {
+    void drawGame(Graphics2D g) {
         g.setFont(normalFont);
+        setBackground(Color.BLACK);
+        g.setColor(Color.WHITE);
         //adds debug for graphics
         if(getDebug().getIsVisible())
             getDebug().drawObject(g);
         
         drawCenteredString(g, "Test", 150, 150, getFont());
         
-        g.fillRect(40, 40, 40, 40);
+        drawScreenObjects(g);
     }
 
     @Override
@@ -61,7 +75,6 @@ public class OptionScreen extends AbstractScreen {
     public void mouseMoved(MouseEvent me) {
         setMouseX(me.getX());
         setMouseY(me.getY());
-        System.out.println("mouse moves");
     }
 
     @Override
@@ -86,6 +99,11 @@ public class OptionScreen extends AbstractScreen {
 
                     //cycle through all input
                     if (key == KeyEvent.VK_0) {
+                        System.out.println("here");
+                    }
+                    
+                    if(key == KeyEvent.VK_ESCAPE){
+                        setNextScreen('T');
                     }
 
                     break;

@@ -8,6 +8,7 @@ package screenObjects;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseMotionListener;
@@ -47,11 +48,6 @@ public class Debug extends AbstractScreenObject{
                     if (key == KeyEvent.VK_F3) {
                         setIsVisible(!getIsVisible());
                         delayInput(getInputDelay());
-                    }
-                    if(key == KeyEvent.VK_0){
-                        System.out.println("#######");
-                        System.out.println(getDelayInput());
-                        System.out.println(getInputFrameCounter());
                     }
                     break;
             }
@@ -95,7 +91,7 @@ public class Debug extends AbstractScreenObject{
 
     //main draw method
     @Override
-    public void drawObject(Graphics g) {
+    public void drawObject(Graphics2D g) {
         masterDebug(g);
     }
     

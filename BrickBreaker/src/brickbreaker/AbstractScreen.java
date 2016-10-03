@@ -71,13 +71,13 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     //graphics methods
     //------------------------------------------------------------------
-    abstract void drawGame(Graphics g);
+    abstract void drawGame(Graphics2D g);
     
     //ScreenObject methods
     //------------------------------------------------------------------
     
     //draws screen objects in the ScreenObject ArrayList
-    public void drawScreenObjects(Graphics g){
+    public void drawScreenObjects(Graphics2D g){
         for(AbstractScreenObject ob : getObjectsArray()){
             if(ob.getIsVisible()){
                 ob.drawObject(g);
@@ -121,7 +121,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         //sets a new buffered image in memory to draw them
         back = (BufferedImage)(createImage(getWidth(),getHeight()));
         //creates graphics pointer to image in memory
-	Graphics gMemory = back.createGraphics();
+	Graphics2D gMemory = back.createGraphics();
         //clears screen
         gMemory.setColor(Color.BLACK);
         gMemory.fillRect(0,0,getWidth(),getHeight());
@@ -137,7 +137,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         paintComponent(g);
     }
     
-    public void drawCenteredString(Graphics g, String str, int x, int y, Font font){
+    public void drawCenteredString(Graphics2D g, String str, int x, int y, Font font){
         g.setFont(font);
         FontMetrics metrics = g.getFontMetrics(font);
         String drawString = str;

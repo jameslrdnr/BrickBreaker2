@@ -29,7 +29,7 @@ public abstract class AbstractScreenObject {
     private Color color;
     private boolean isVisible, acceptingInput, delayInput; 
     private int inputDelay, inputFrameCounter;
-    private int yMovementMultiplier, xMovementMultiplier, position, maxPosition;
+    private int yMovementMultiplier = 1, xMovementMultiplier = 1, position, maxPosition;
     
     //init constructors
     public AbstractScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput){
@@ -174,7 +174,7 @@ public abstract class AbstractScreenObject {
     
     //graphics methods
     //------------------------------------------------------------------
-    public abstract void drawObject(Graphics g);
+    public abstract void drawObject(Graphics2D g);
     
     
     

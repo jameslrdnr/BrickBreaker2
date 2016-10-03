@@ -33,7 +33,7 @@ Font InstructionTitleFont = new Font(Font.MONOSPACED, Font.BOLD, 50);
     }
 
     @Override
-    void drawGame(Graphics g) {
+    void drawGame(Graphics2D g) {
         setBackground(Color.BLACK);
         g.setColor(Color.WHITE);
         drawCenteredString(g, "Instructions", getWidth()/2, getHeight()/2 - 175, InstructionTitleFont);
