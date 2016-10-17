@@ -25,7 +25,7 @@ public abstract class AbstractScreenObject {
     private final float initX, initY;
     private final float rX, bY;
     private int width, height;
-    private final boolean collision;
+    private boolean collision;
     private Color color;
     private boolean isVisible, acceptingInput, delayInput; 
     private int inputDelay, inputFrameCounter;
@@ -248,7 +248,7 @@ public abstract class AbstractScreenObject {
         height = heightTemp;
     }
     
-    public void seDeltaX(float deltaXTemp){
+    public void setDeltaX(float deltaXTemp){
         deltaX = deltaXTemp;
     }
     
@@ -318,6 +318,14 @@ public abstract class AbstractScreenObject {
 
     public void setInputFrameCounter(int inputFrameCounter) {
         this.inputFrameCounter = inputFrameCounter;
+    }
+
+    public boolean isCollision() {
+        return collision;
+    }
+
+    public void setCollision(boolean collision) {
+        this.collision = collision;
     }
     
     

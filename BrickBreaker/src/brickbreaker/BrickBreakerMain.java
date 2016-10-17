@@ -10,6 +10,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Properties;
 import javax.swing.JFrame;
 
 /**
@@ -27,12 +30,21 @@ public class BrickBreakerMain extends JFrame {
     final double tickNum = 60D;
     private double ns = 1000000000 / tickNum;
     
+    public static Properties options;
+    private static final String optionsFile = "src\\assets\\options.properties";
+    
     public BrickBreakerMain(){
         //init the screen
         super("Breakin Bricks");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(800, 600));
         currentScreen = new TitleScreen();
+        
+        //init options and set to values from file
+        options = new Properties();
+        loadOptions();
+        
+        
         add(currentScreen);
         //NEED TO DO THIS EVERYTIME YOU CHANGE SCREENS FOR INPUT TO WORK
         currentScreen.requestFocusInWindow();
@@ -74,13 +86,16 @@ public class BrickBreakerMain extends JFrame {
                 switch(currentScreen.getNextScreen()){
                     //play case
                     case 'P' :
+                        remove(currentScreen);
                         currentScreen = new PlayScreen();
                         add(currentScreen);
                         currentScreen.requestFocusInWindow();
                         g = currentScreen.getGraphics();
                         pack();
+                        currentScreen.requestFocus();
                         break;
                     case 'I' : 
+                        remove(currentScreen);
                         currentScreen = new InstructionScreen();
                         add(currentScreen);
                         currentScreen.requestFocusInWindow();
@@ -88,6 +103,7 @@ public class BrickBreakerMain extends JFrame {
                         pack();
                         break;
                     case 'H' :
+                        remove(currentScreen);
                         currentScreen = new HighScoresScreen(10);
                         add(currentScreen);
                         currentScreen.requestFocusInWindow();
@@ -95,9 +111,9 @@ public class BrickBreakerMain extends JFrame {
                         pack();
                         break;
                     case 'O' :
+                        remove(currentScreen);
                         currentScreen = new OptionScreen();
                         add(currentScreen);
-                        currentScreen.requestFocusInWindow();
                         g = currentScreen.getGraphics();
                         pack();
                         break;
@@ -107,9 +123,10 @@ public class BrickBreakerMain extends JFrame {
                         dispose();
                         break;
                     case 'T' :
+                        remove(currentScreen);
                         currentScreen = new TitleScreen();
                         add(currentScreen);
-                        currentScreen.requestFocusInWindow();
+                        currentScreen.grabFocus();
                         g = currentScreen.getGraphics();
                         pack();
                         break;
@@ -181,6 +198,39 @@ public class BrickBreakerMain extends JFrame {
     
     public static boolean getIsPlaying(){
         return isPlaying;
+    }
+    
+    //just to make it easier to use options from other classes
+    //------------------------------------------------------------------
+    public static Properties getOptions(){
+        return options;
+    }
+    
+    //load options from options.properties
+    //------------------------------------------------------------------
+    public static void loadOptions() {
+        try{
+            FileInputStream in = new FileInputStream(optionsFile);
+            options.load(in);
+            in.close();
+        }
+        catch(Exception e){
+            System.out.println("Error reading in options : " + e);
+        }
+    }
+    
+    //save optionsToSave to options.properties and set options to options to save
+    //------------------------------------------------------------------
+    public static void storeOptions(Properties optionsToSave){
+        options = optionsToSave;
+        try{
+            FileOutputStream out = new FileOutputStream(optionsFile);
+            options.store(out, optionsFile);
+            out.close();
+        }
+        catch(Exception e){
+            System.out.println("Error writing in options : " + e);
+        }
     }
     
 }

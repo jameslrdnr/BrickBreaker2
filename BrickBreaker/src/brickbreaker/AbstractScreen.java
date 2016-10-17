@@ -155,19 +155,22 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     public abstract void specificInput(ArrayList<Integer> inputList);
     
-    public void handleInput(ArrayList<Integer> inputList){
+    public ArrayList<Integer> handleInput(ArrayList<Integer> inputList){
         //adds all the new input keys to the list of currently pressed keys
         for(int ob : getDumpList()){
-            if(getInputList().contains(ob) == false)
-                getInputList().add(ob);
+            if(inputList.contains(ob) == false)
+                inputList.add(ob);
         }
+        
         //removes all keys that have been released
         for(int ob : getRemoveList()){
-            if(getInputList().contains(ob) == true)
-                for(int i = 0; i < getRemoveList().size(); i++){
-                    if(getRemoveList().get(i) == ob){
-                        getInputList().remove(i);
-                  }
+            if(inputList.contains(ob)){
+                for(int i = 0; i < inputList.size(); i++){
+                    if(inputList.get(i) == ob){
+                        inputList.remove(i);
+                        i--;
+                    }
+                }
             }
         }
         
@@ -176,6 +179,9 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         getRemoveList().clear();
         //gives the current input to the specific input method
         specificInput(inputList);
+        
+        return inputList;
+        
     }
     
     @Override

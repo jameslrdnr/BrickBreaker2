@@ -22,16 +22,24 @@ import screenObjects.BorderLayout;
 public class OptionScreen extends AbstractScreen {
     
     private Font normalFont = new Font(Font.MONOSPACED, Font.BOLD, 16);
+    private Font titleFont = new Font(Font.MONOSPACED, Font.BOLD, 32);
     private AbstractScreenObject tempOb;
     
     public OptionScreen(){
         super();
+        
+        init();
+        
+    }
+    
+    //default variables
+    public void init(){
+        
         setInputMethod("default");
         setFont(normalFont);
         
-        tempOb = new BorderLayout(150, 150, 30, 30);
+        tempOb = new BorderLayout(150, 150, 100, 30);
         getObjectsArray().add(tempOb);
-        
     }
 
     @Override
@@ -56,7 +64,9 @@ public class OptionScreen extends AbstractScreen {
         if(getDebug().getIsVisible())
             getDebug().drawObject(g);
         
-        drawCenteredString(g, "Test", 150, 150, getFont());
+        setFont(titleFont);
+        drawCenteredString(g, "Options", getWidth()/2, 75, getFont());
+        setFont(normalFont);
         
         drawScreenObjects(g);
     }

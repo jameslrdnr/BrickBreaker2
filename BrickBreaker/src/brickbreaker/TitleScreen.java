@@ -35,6 +35,8 @@ public class TitleScreen extends AbstractScreen{
         
         //sets params for input handling
         setInputMethod("default");
+        
+        setNextScreen(' ');
                 
         //sets options for the menu
         options = new String[5];
@@ -56,7 +58,9 @@ public class TitleScreen extends AbstractScreen{
     @Override
     public void runLogic() {
         timeAtScreen = System.nanoTime();
-        handleInput(getInputList());
+        //sets input list
+        setInputList(handleInput(getInputList()));
+        //updates mouse pos
         getDebug().setMouseX(getMouseX());
         getDebug().setMouseY(getMouseY());
         

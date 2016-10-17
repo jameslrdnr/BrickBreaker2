@@ -1,5 +1,6 @@
 package screenObjects;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -20,9 +21,9 @@ import java.awt.geom.Rectangle2D;
  */
 public class BorderLayout extends AbstractScreenObject{
     
-    private int borderLineWidth, borderLineHeight;
+    private int borderLineWidth, borderLineHeight, cornerHeight, cornerWidth;
     private double arcAngle, arcDisplacement;
-    private Arc2D cornerTR, cornerTL, cornerBR, cornerBL;
+    private final BasicStroke defaultStroke = new BasicStroke(1);
     
     public BorderLayout(){
         
@@ -31,19 +32,19 @@ public class BorderLayout extends AbstractScreenObject{
     }
     
     public BorderLayout(float x, float y, int width, int height){
-        super(x, y, width, height, true, true);
+        super(x, y, width, height, false, false);
         
         init();
         
     }
     
     private void init(){
+        
         setColor(Color.WHITE);
         setIsVisible(true);
         
-        cornerTL = new Arc2D.Double((double)getX(), (double)getY(), 25, 25, getArcAngle(), getArcDisplacement(), Arc2D.OPEN);
-        
-        
+        setCornerHeight(20);
+        setCornerWidth(20);
         
     }
 
@@ -66,16 +67,31 @@ public class BorderLayout extends AbstractScreenObject{
     public void drawObject(Graphics2D g) {
         
         //draw the corner pieces
+        g.setStroke(defaultStroke);
         drawCornerPieces(g);
         
     }
     
     public void drawCornerPieces(Graphics2D g){
         
+        //draws the top left corner
+        g.drawArc((int)getX(), (int)getY(), getCornerWidth(), getCornerHeight(), 90, 90);
         
+        //draws top right corner
+        g.drawArc((int)getX() + getWidth() - getCornerWidth(), (int)getY(), getCornerWidth(), getCornerHeight(), 90, -90);
         
-        g.draw(cornerTL);
+        //draws bottom left corner
+        g.drawArc((int)getX(), (int)getY() + getHeight(), getCornerWidth(), getCornerHeight(), 180, 90);
         
+        //draws bottom right corner
+        g.drawArc((int)getX() + getWidth() - getCornerWidth(), (int)getY() + getHeight(), getCornerWidth(), getCornerHeight(), 270, 90);
+    }
+    
+    public void drawLineSegments(Graphics2D g){
+        //draws top line
+        g.drawLine((int)getX() + getCornerWidth()/2, (int)getY(), (int)getX() + getWidth() - getCornerWidth()/2, (int)getY());
+        //draws bottom line
+        g.drawLine((int)getX() + getCornerWidth()/2, (int)getY() + getHeight() + getCornerHeight(), (int)getX() + getWidth() - getCornerWidth()/2, (int)getY() + getHeight() + getCornerHeight());
     }
     
     //getter/setter methods
@@ -110,6 +126,22 @@ public class BorderLayout extends AbstractScreenObject{
 
     public void setArcDisplacement(double arcDisplacement) {
         this.arcDisplacement = arcDisplacement;
+    }
+
+    public int getCornerHeight() {
+        return cornerHeight;
+    }
+
+    public void setCornerHeight(int cornerHeight) {
+        this.cornerHeight = cornerHeight;
+    }
+
+    public int getCornerWidth() {
+        return cornerWidth;
+    }
+
+    public void setCornerWidth(int cornerWidth) {
+        this.cornerWidth = cornerWidth;
     }
     
     
