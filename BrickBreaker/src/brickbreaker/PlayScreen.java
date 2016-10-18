@@ -26,13 +26,20 @@ import screenObjects.*;
  */
 public class PlayScreen extends AbstractScreen {
     
+    //########################
+    //map generation variables
+    
     private BasicBrickObject[][] chunk1, chunk2;
-    private final int chunkWidth = 78, chunkHeight = 120;
+    private final int chunkWidth = 78, chunkHeight = 40;
+    private float cubeSpawnRate;
+    private float screenScrollSpeed;
+    private String currentChunkGenType;
+    private int chunkGenCount;
+    
+    //########################
+    
     private Properties IDlist;
     private String IDMapLoc = "src/assets/ObjectIDMap.properties";
-    private float cubeSpawnRate;
-    
-    private float screenScrollSpeed;
     
     AbstractScreenObject player;
 
@@ -47,14 +54,13 @@ public class PlayScreen extends AbstractScreen {
         
         setVisible(true);
         
-        cubeSpawnRate = .01f;
-        
         IDlist = new Properties();
         
         //input handling
         setInputMethod("default");
         
         
+        //adds player to screen objects
         player = new PlayerScreenObject(300, 300, 25, 25, true, true);
         player.setIsVisible(true);
         getObjectsArray().add(player);
@@ -77,13 +83,21 @@ public class PlayScreen extends AbstractScreen {
         //done with all file input/IO bullshit because fuck try catchs
         //#################################
         
+        
+        //#################################
+        //all map generation code here (includes speed/spawn vars)
+        
+        setCurrentChunkGenType("random");
+        
+        cubeSpawnRate = .01f;
+        
         chunk1 = new BasicBrickObject[chunkWidth][chunkHeight];
         chunk2 = new BasicBrickObject[chunkWidth][chunkHeight];
         
-        chunk1 = generateChunk(chunk1);
-        chunk2 = generateChunk(chunk2);
+        chunk1 = generateChunk(getCurrentChunkGenType(), getChunkGenCount());
+        chunk2 = generateChunk(getCurrentChunkGenType(), getChunkGenCount());
         
-        chunk1 = chunkInitRandomizer(chunk1, 0);
+        //chunk1 = chunkInitRandomizer(chunk1, 0);
         //chunk2 = chunkInitRandomizer(chunk2, 4);
         
         //move first chunk halfway off screen
@@ -241,6 +255,11 @@ public class PlayScreen extends AbstractScreen {
         return chunk;
         
     }
+
+    
+    /*
+    ###############################
+    looks fucking awesome but doesnt serve our purpose
     
     public BasicBrickObject[][] chunkInitRandomizer(BasicBrickObject[][] chunk, int count){
         
@@ -334,8 +353,20 @@ public class PlayScreen extends AbstractScreen {
         return chunk;
         
     }
+
+*/
     
-    public BasicBrickObject[][] generateChunk(BasicBrickObject[][] chunk){
+    public BasicBrickObject[][] generateAlleyChunk(BasicBrickObject[][] inputChunk){
+        
+        BasicBrickObject[][] tempChunk = inputChunk;
+        
+        
+        
+        return tempChunk;
+        
+    }
+    
+    public BasicBrickObject[][] generateRandomPlacementChunk(BasicBrickObject[][] chunk){
         
         BasicBrickObject[][] tempChunk = chunk;
         
@@ -369,5 +400,66 @@ public class PlayScreen extends AbstractScreen {
             }
         }
     }
+    
+    
+    
+    
+    
+    //######################
+    //getter/setter methods
+    
+    public BasicBrickObject[][] generateChunk(String chunkType, int chunkCount){
+        
+        BasicBrickObject[][] tempChunk = new BasicBrickObject[chunkWidth][chunkHeight];
+        
+        //add all types of chunks here along w/ logic manager to handle if its time to switch chunk types
+        
+        
+        //final vars to set/return
+        setChunkGenCount(getChunkGenCount()-1);
+        return tempChunk;
+        
+    }
+
+    public float getCubeSpawnRate() {
+        return cubeSpawnRate;
+    }
+
+    public void setCubeSpawnRate(float cubeSpawnRate) {
+        this.cubeSpawnRate = cubeSpawnRate;
+    }
+
+    public float getScreenScrollSpeed() {
+        return screenScrollSpeed;
+    }
+
+    public void setScreenScrollSpeed(float screenScrollSpeed) {
+        this.screenScrollSpeed = screenScrollSpeed;
+    }
+
+    public String getCurrentChunkGenType() {
+        return currentChunkGenType;
+    }
+
+    public void setCurrentChunkGenType(String currentChunkGenType) {
+        this.currentChunkGenType = currentChunkGenType;
+    }
+
+    public int getChunkGenCount() {
+        return chunkGenCount;
+    }
+
+    public void setChunkGenCount(int chunkGenCount) {
+        this.chunkGenCount = chunkGenCount;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
 }
