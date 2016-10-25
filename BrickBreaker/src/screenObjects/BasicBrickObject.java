@@ -16,7 +16,7 @@ public class BasicBrickObject extends AbstractScreenObject{
     
     public BasicBrickObject(float x, float y, int width, int height){
         
-        super(x, y, width, height, true, true);
+        super(x, y, width, height, (short)0, true, true);
         
         init();
         
@@ -37,12 +37,12 @@ public class BasicBrickObject extends AbstractScreenObject{
 
     @Override
     public void handleInput(String inputMethod, int key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     @Override
     public void runLogic() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     @Override
@@ -51,7 +51,7 @@ public class BasicBrickObject extends AbstractScreenObject{
         Color tempC = g.getColor();
         
         g.setColor(Color.BLACK);
-        g.fillRoundRect((int) getX(), (int) getY(), getWidth(), getHeight(), 10, 10);
+        g.fillRoundRect((int) getX(), (int) getY(), getWidth(), getHeight(), 1, 1);
         g.setColor(getColor());
         g.fillRect((int) getX(), (int) getY(), getWidth()-2, getHeight()-2);
         

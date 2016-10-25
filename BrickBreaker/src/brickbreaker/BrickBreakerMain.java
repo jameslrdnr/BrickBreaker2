@@ -38,6 +38,7 @@ public class BrickBreakerMain extends JFrame {
         super("Breakin Bricks");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(800, 600));
+        setResizable(false);
         currentScreen = new TitleScreen();
         
         //init options and set to values from file

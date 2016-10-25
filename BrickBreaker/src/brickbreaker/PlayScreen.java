@@ -29,8 +29,8 @@ public class PlayScreen extends AbstractScreen {
     //########################
     //map generation variables
     
-    private BasicBrickObject[][] chunk1, chunk2;
-    private final int chunkWidth = 78, chunkHeight = 40;
+    private BasicBrickObject[][][] masterChunk;
+    private final int chunkWidth = 79, chunkHeight = 40, numChunks = 5;
     private float cubeSpawnRate;
     private float screenScrollSpeed;
     private String currentChunkGenType;
@@ -84,32 +84,82 @@ public class PlayScreen extends AbstractScreen {
         //#################################
         
         
+        
         //#################################
         //all map generation code here (includes speed/spawn vars)
         
+        masterChunk = new BasicBrickObject[numChunks][chunkWidth][chunkHeight];
+        
+        //create all the pieces themselves
+        for (int t = 0; t < numChunks; t++) {
+            for (int x = 0; x < chunkWidth; x++) {
+                for (int y = chunkHeight-1; y >= 0; y--) {
+                    
+                    masterChunk[t][x][y] = new BasicBrickObject(x*10, -(y*10 + (chunkHeight * t * 10)) + 10, 10, 10);
+
+                }
+            }
+        }
+        
+        
+        System.out.println("######@@@@@");
+        System.out.println(masterChunk[0][0][0].getY());
+        System.out.println(masterChunk[1][0][0].getY());
+        System.out.println(masterChunk[2][0][0].getY());
+        System.out.println(masterChunk[3][0][0].getY());
+        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println("######@@@@@");
+        
+        
         setCurrentChunkGenType("random");
         
-        cubeSpawnRate = .01f;
+        cubeSpawnRate = .015f;
         
-        chunk1 = new BasicBrickObject[chunkWidth][chunkHeight];
-        chunk2 = new BasicBrickObject[chunkWidth][chunkHeight];
         
-        chunk1 = generateChunk(getCurrentChunkGenType(), getChunkGenCount());
-        chunk2 = generateChunk(getCurrentChunkGenType(), getChunkGenCount());
+        masterChunk[0] = generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount());
+        setCurrentChunkGenType("random");
+        masterChunk[1] = generateChunk(getCurrentChunkGenType(), 1, getChunkGenCount());
+        setCurrentChunkGenType("random");
+        masterChunk[2] = generateChunk(getCurrentChunkGenType(), 2, getChunkGenCount());
+        setCurrentChunkGenType("random");
+        masterChunk[3] = generateChunk(getCurrentChunkGenType(), 3, getChunkGenCount());
+        setCurrentChunkGenType("random");
+        masterChunk[4] = generateChunk(getCurrentChunkGenType(), 4, getChunkGenCount());
         
         //chunk1 = chunkInitRandomizer(chunk1, 0);
         //chunk2 = chunkInitRandomizer(chunk2, 4);
         
+        System.out.println("######^^");
+        System.out.println(masterChunk[0][0][0].getY());
+        System.out.println(masterChunk[1][0][0].getY());
+        System.out.println(masterChunk[2][0][0].getY());
+        System.out.println(masterChunk[3][0][0].getY());
+        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println("######^^");
+        
+        
         //move first chunk halfway off screen
-        for(BasicBrickObject[] slice : chunk1){
-            for(BasicBrickObject piece : slice){
-                
-                piece.moveY(-chunkHeight*2);
-                
+        for (BasicBrickObject[][] chunk : masterChunk) {
+            for (BasicBrickObject[] slice : chunk) {
+                for (BasicBrickObject piece : slice) {
+
+                    piece.moveY(-chunkHeight * 2);
+
+                }
             }
         }
         
         screenScrollSpeed = .4f;
+        
+        
+        System.out.println("######");
+        System.out.println(masterChunk[0][0][0].getY());
+        System.out.println(masterChunk[1][0][0].getY());
+        System.out.println(masterChunk[2][0][0].getY());
+        System.out.println(masterChunk[3][0][0].getY());
+        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println("######");
+        
         
     }
     
@@ -122,8 +172,7 @@ public class PlayScreen extends AbstractScreen {
         getDebug().setMouseY(getMouseY());
         
         //move map tiles
-        moveScreen(chunk1);
-        moveScreen(chunk2);
+        moveScreen();
         
         //run logic() on all objects in objects array
         runScreenObjectLogic();
@@ -134,6 +183,16 @@ public class PlayScreen extends AbstractScreen {
         //run move() on all objects in objects array
         moveScreenObjects();
         
+        
+        System.out.println("######");
+        System.out.println(masterChunk[0][0][0].getY());
+        System.out.println(masterChunk[1][0][0].getY());
+        System.out.println(masterChunk[2][0][0].getY());
+        System.out.println(masterChunk[3][0][0].getY());
+        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println("######");
+        
+        
     }
 
     @Override
@@ -142,15 +201,11 @@ public class PlayScreen extends AbstractScreen {
         setBackground(Color.BLACK);
         g.setColor(Color.WHITE);
         
-        //draws the 2 map chunks
-        drawMap(chunk1, g);
-        //drawMap(chunk2, g);
+        //draws the map chunks
+        drawMap(masterChunk, g);
         
         //draw screen objects
         drawScreenObjects(g);
-        
-        
-        
         
         getDebug().drawObject(g);
         
@@ -214,47 +269,20 @@ public class PlayScreen extends AbstractScreen {
     
     //map draw methods
     
-    public void drawMap(BasicBrickObject[][] chunk, Graphics2D g){
+    public void drawMap(BasicBrickObject[][][] chunk, Graphics2D g){
         
-        for(BasicBrickObject[] slice : chunk){
-            for(BasicBrickObject piece : slice){
-                if(piece.getIsVisible())
-                    piece.drawObject(g);
+        for (BasicBrickObject[][] tempChunk : chunk) {
+            for (BasicBrickObject[] slice : tempChunk) {
+                for (BasicBrickObject piece : slice) {
+                    if(piece.getIsVisible())
+                        piece.drawObject(g);
+                }
             }
         }
         
     }
     
     //map generation methods
-    
-    //for generating a new chunk entirely
-    public BasicBrickObject[][] chunkRamdomizer(BasicBrickObject id, float rarity){
-        
-        BasicBrickObject[][] tempChunk = new BasicBrickObject[chunkWidth][chunkHeight];
-        
-        return chunkRandomizer(id, rarity, tempChunk);
-        
-    }
-    
-    public BasicBrickObject[][] chunkRandomizer(BasicBrickObject id, float rarity, BasicBrickObject[][] chunk){
-        
-        BasicBrickObject[][] tempChunk = chunk;
-        
-        //randomize the type of block into the chunk w/ rarity
-        for(BasicBrickObject[] slice : tempChunk){
-            for(BasicBrickObject piece : slice){
-                double rand = Math.random();
-                if(rand <= rarity){
-                    piece = id;
-                }
-            }
-        }
-        
-        //final return/set methods
-        chunk = tempChunk;
-        return chunk;
-        
-    }
 
     
     /*
@@ -356,6 +384,19 @@ public class PlayScreen extends AbstractScreen {
 
 */
     
+    public BasicBrickObject[][] generateSolidChunk(BasicBrickObject[][] chunk, boolean bool){
+        
+        for(BasicBrickObject[] slice : chunk){
+            for(BasicBrickObject piece : slice){
+                piece.setIsVisible(bool);
+                piece.setCollision(bool);
+            }
+        }
+        
+        return chunk;
+        
+    }
+    
     public BasicBrickObject[][] generateAlleyChunk(BasicBrickObject[][] inputChunk){
         
         BasicBrickObject[][] tempChunk = inputChunk;
@@ -368,19 +409,18 @@ public class PlayScreen extends AbstractScreen {
     
     public BasicBrickObject[][] generateRandomPlacementChunk(BasicBrickObject[][] chunk){
         
-        BasicBrickObject[][] tempChunk = chunk;
         
-        for (int x = 0; x < tempChunk.length; x++) {
-            for (int y = 0; y < tempChunk[x].length; y++) {
-                tempChunk[x][y] = new BasicBrickObject(x*10, y*10, 10, 10);
-                tempChunk[x][y].setColor(Color.WHITE);
-                tempChunk[x][y].setIsVisible(true);
-                tempChunk[x][y].setCollision(true);
+        
+        for (int x = 0; x < chunk.length; x++) {
+            for (int y = 0; y < chunk[x].length; y++) {
+                chunk[x][y].setColor(Color.WHITE);
+                chunk[x][y].setIsVisible(true);
+                chunk[x][y].setCollision(true);
                 
                 //see if it should be filled space
                 if(Math.random() > cubeSpawnRate){
-                    tempChunk[x][y].setIsVisible(false);
-                    tempChunk[x][y].setCollision(false);
+                    chunk[x][y].setIsVisible(false);
+                    chunk[x][y].setCollision(false);
                 }
                 
                 //debug stuff
@@ -388,17 +428,44 @@ public class PlayScreen extends AbstractScreen {
             }
         }
         
-        return tempChunk;
+        return chunk;
         
     }
     
-    public void moveScreen(BasicBrickObject[][] tempChunk){
+    public void moveScreen(){
         
-        for(BasicBrickObject[] slice : tempChunk){
-            for(BasicBrickObject piece : slice){
-                piece.moveY(screenScrollSpeed);
+        for (BasicBrickObject[][] tempChunk : masterChunk) {
+            for (BasicBrickObject[] slice : tempChunk) {
+                for (BasicBrickObject piece : slice) {
+                    piece.moveY(screenScrollSpeed);
+                }
             }
         }
+        
+        for(int c = 0; c < masterChunk.length; c++){
+            if(masterChunk[c][0][0].getY() > 900){
+                BasicBrickObject holder = masterChunk[c][0][0];
+                holder.setX(masterChunk[c][0][0].getX());
+                holder.setY(masterChunk[c][0][0].getY());
+                holder.setColor(Color.red);
+                holder.setIsVisible(true);
+                getObjectsArray().add(holder);
+                masterChunk[c] = generateChunk(getCurrentChunkGenType(), c, 0);
+                moveChunk(c, 0, -(chunkHeight * numChunks));
+            }
+        }
+        
+    }
+    
+    public void moveChunk(int chunkPos, float deltaX, float deltaY){
+        
+        for(BasicBrickObject[] slice : masterChunk[chunkPos]){
+            for(BasicBrickObject piece : slice){
+                piece.moveX(deltaX);
+                piece.moveY(deltaY);
+            }
+        }
+        
     }
     
     
@@ -408,15 +475,49 @@ public class PlayScreen extends AbstractScreen {
     //######################
     //getter/setter methods
     
-    public BasicBrickObject[][] generateChunk(String chunkType, int chunkCount){
+    public BasicBrickObject[][] generateChunk(String chunkType,int chunkNum, int chunkCount){
         
-        BasicBrickObject[][] tempChunk = new BasicBrickObject[chunkWidth][chunkHeight];
+        BasicBrickObject[][] tempChunk = masterChunk[chunkNum];
         
+        System.out.println(tempChunk[0][0].getY() + "  %%%%%%%%");
+        
+        //#################
         //add all types of chunks here along w/ logic manager to handle if its time to switch chunk types
         
+        switch(chunkType){
+            
+            case "random":
+                tempChunk = generateRandomPlacementChunk(tempChunk);
+                break;
+            case "alley":
+                tempChunk = generateAlleyChunk(tempChunk);
+                break;
+            case "solid":
+                tempChunk = generateSolidChunk(tempChunk, true);
+                break;
+            case "empty":
+                tempChunk = generateSolidChunk(tempChunk, false);
+                break;
+            
+        }
+        System.out.println(tempChunk[0][0].getY() + "  ********");
+        
+        //chunk debug
+        /*
+        
+        for(int x = 0; x < chunkWidth; x++){
+            for(int y = 0; y < chunkHeight; y++){
+                if(y == 0 || y == chunkHeight){
+                    tempChunk[x][y].setIsVisible(true);
+                    tempChunk[x][y].setColor(Color.ORANGE);
+                    tempChunk[x][y].setCollision(true);
+                }
+            }
+        }
+
+        */
         
         //final vars to set/return
-        setChunkGenCount(getChunkGenCount()-1);
         return tempChunk;
         
     }
