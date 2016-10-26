@@ -105,7 +105,16 @@ public class BrickBreakerMain extends JFrame {
                         break;
                     case 'H' :
                         remove(currentScreen);
-                        currentScreen = new HighScoresScreen(10);
+                        currentScreen = new HighScoresScreen();
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
+                        break;
+                    case 'S' :
+                        int score = (int)((PlayScreen)currentScreen).getScore();
+                        remove(currentScreen);
+                        currentScreen = new HighScoresScreen(score);
                         add(currentScreen);
                         currentScreen.requestFocusInWindow();
                         g = currentScreen.getGraphics();

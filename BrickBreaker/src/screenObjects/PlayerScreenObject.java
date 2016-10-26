@@ -111,7 +111,6 @@ public class PlayerScreenObject extends AbstractScreenObject {
             int randG = (int) (Math.random() * 200);
             int randB = (int) (Math.random() * 200);
             playerColor = new Color(randR, randG, randB);
-            playerColor.darker();
             
         }
         

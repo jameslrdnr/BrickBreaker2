@@ -6,6 +6,7 @@
 package brickbreaker;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -25,6 +26,26 @@ import screenObjects.*;
  * @author JamesLaptop
  */
 public class PlayScreen extends AbstractScreen {
+
+    //#########################
+    //all score stuff
+    
+    //used for timers and score
+    private final int framesPerSecond = 60;
+    
+    //a constant which is the score gained every second
+    private final double scorePerSecond = 1.0;
+    
+    //how much score is added per frame off of time alone
+    private final double scorePerFrame = scorePerSecond / framesPerSecond;
+    
+    //score variable
+    private double score;
+    
+    //font used for drawing the score
+    private final Font scoreFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
+    
+    //########################
     
     //########################
     //map generation variables
@@ -171,6 +192,9 @@ public class PlayScreen extends AbstractScreen {
         getDebug().setMouseX(getMouseX());
         getDebug().setMouseY(getMouseY());
         
+        //handle score
+        handleScore();
+        
         //move map tiles
         moveScreen();
         
@@ -179,18 +203,13 @@ public class PlayScreen extends AbstractScreen {
         
         //input
         handleInput(getInputList());
+        delayInputManager();
         
         //run move() on all objects in objects array
         moveScreenObjects();
         
         
-        System.out.println("######");
-        System.out.println(masterChunk[0][0][0].getY());
-        System.out.println(masterChunk[1][0][0].getY());
-        System.out.println(masterChunk[2][0][0].getY());
-        System.out.println(masterChunk[3][0][0].getY());
-        System.out.println(masterChunk[4][0][0].getY());
-        System.out.println("######");
+        
         
         
     }
@@ -207,7 +226,11 @@ public class PlayScreen extends AbstractScreen {
         //draw screen objects
         drawScreenObjects(g);
         
+        //draws debug
         getDebug().drawObject(g);
+        
+        //draws score
+        drawScore(g);
         
     }
 
@@ -218,7 +241,14 @@ public class PlayScreen extends AbstractScreen {
             for (AbstractScreenObject ob : getObjectsArray()) {
                 ob.inputHandler(getInputMethod(), key);
             }
+            
+            if(key == KeyEvent.VK_F){
+                setNextScreen('S');
+            }
+            
         }
+        
+        
         
     }
 
@@ -250,6 +280,36 @@ public class PlayScreen extends AbstractScreen {
     
     
     
+    //will be called every frame to do all score handling
+    private void handleScore() {
+        //used just because it is easier to understand
+        double scoreToAdd = 0;
+        
+        //score over time
+        scoreToAdd += scorePerFrame;
+        
+        //add the score accrued this frame to the overall score
+        score += scoreToAdd;
+        
+        
+    }
+
+    private void drawScore(Graphics2D g) {
+        //inits
+        Font initFont = g.getFont();
+        Color initColor = g.getColor();
+        
+        //change values to use
+        g.setFont(scoreFont);
+        g.setColor(Color.red);
+        
+        //draw the score - NOTE - this line is aids
+        g.drawString((long) score + "", getWidth() - g.getFontMetrics().stringWidth((long) score + "") - g.getFontMetrics().charWidth(0) / 2 - 10, g.getFontMetrics().getHeight() * 3 / 4);
+        
+        //reset to inits
+        g.setFont(initFont);
+            g.setColor(initColor);
+    }
     
     
     
@@ -552,6 +612,14 @@ public class PlayScreen extends AbstractScreen {
 
     public void setChunkGenCount(int chunkGenCount) {
         this.chunkGenCount = chunkGenCount;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
     }
     
     
