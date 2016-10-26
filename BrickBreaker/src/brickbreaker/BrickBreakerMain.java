@@ -38,6 +38,7 @@ public class BrickBreakerMain extends JFrame {
         super("Breakin Bricks");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(800, 600));
+        setResizable(false);
         currentScreen = new TitleScreen();
         
         //init options and set to values from file
@@ -104,7 +105,16 @@ public class BrickBreakerMain extends JFrame {
                         break;
                     case 'H' :
                         remove(currentScreen);
-                        currentScreen = new HighScoresScreen(10);
+                        currentScreen = new HighScoresScreen();
+                        add(currentScreen);
+                        currentScreen.requestFocusInWindow();
+                        g = currentScreen.getGraphics();
+                        pack();
+                        break;
+                    case 'S' :
+                        int score = (int)((PlayScreen)currentScreen).getScore();
+                        remove(currentScreen);
+                        currentScreen = new HighScoresScreen(score);
                         add(currentScreen);
                         currentScreen.requestFocusInWindow();
                         g = currentScreen.getGraphics();

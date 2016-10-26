@@ -55,6 +55,7 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
     public HighScoresScreen(){
         super();
         typing = false;
+        firstRelease = true;
         scoresList = new ArrayList<String>();
         addScores();
     }
@@ -64,6 +65,7 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
     public HighScoresScreen(int currentScore){
         super();
         typing = true;
+        firstRelease = true;
         playerName = "";
         this.currentScore = currentScore;
         scoresList = new ArrayList<String>();
@@ -85,7 +87,11 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
         g.setColor(Color.WHITE);
         g.setFont(highScoresFont);
         
-         if(typing){            
+         if(typing){
+             
+             //draw the current score
+            drawCenteredString(g, "Your score : " + currentScore, getWidth() / 2, getHeight() / 6, highScoresTitleFont);
+            
             //prompt player to input name
             drawCenteredString(g, "What is your name?", getWidth() / 2, getHeight() / 4, highScoresTitleFont);
             
@@ -94,7 +100,11 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
         }
         
         else{
+        	
+            //Title
+            drawCenteredString(g, "Previous Highscores : ", getWidth() / 2, getHeight() / 4, highScoresTitleFont);
             
+            g.setFont(highScoresFont);
             //Draw top 10 scores
             for(int i = 0; i < 10 && i < scoresList.size(); i++){
                 //single digit numbers need two spaces
@@ -207,25 +217,34 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
     @Override
     public int compare(String o1, String o2) {
         
+        //each score value
+        int o1Score = Integer.parseInt(o1.substring(0, o1.indexOf(' ')));
+        int o2Score = Integer.parseInt(o2.substring(0, o2.indexOf(' ')));
+        
+        
         //o1 score > o2 score
-        if(Integer.parseInt(o1.substring(0, o1.indexOf(' '))) > Integer.parseInt(o2.substring(0, o1.indexOf(' '))) ){
+        if(o1Score > o2Score ){
             return 1;
         }
         
         //o1 score = o2 score
-        else if(Integer.parseInt(o1.substring(0, o1.indexOf(' '))) == Integer.parseInt(o2.substring(0, o1.indexOf(' '))) ){
+        else if(o1Score == o2Score){
+            
+            //names of the scores
+            String o1Name = o1.substring(o1.indexOf(' '), o1.length());
+            String o2Name = o2.substring(o2.indexOf(' '), o2.length());
             
             //sort by  name alphabetically
-            if(o1.substring(o1.indexOf(' '), o1.length()).compareTo(o2.substring(o2.indexOf(' '), o2.length())) > 0)
+            if(o1Name.compareTo(o2Name) > 0)
                 return -1;
-            else if(o1.substring(o1.indexOf(' ')).compareTo(o2.substring(o2.indexOf(' '))) < 0)
+            else if(o1Name.compareTo(o2Name) < 0)
                 return 1;
             else
                 return 0;
         }
         
         //o1 score < o2 score
-        else if(Integer.parseInt(o1.substring(0, o1.indexOf(' '))) < Integer.parseInt(o2.substring(0, o1.indexOf(' '))) ){
+        else if(o1Score < o2Score ){
             return -1;
         }
         
@@ -304,6 +323,8 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
 
     @Override
     public void specificInput(ArrayList<Integer> inputList) {
+        
     }
+    
 
 }

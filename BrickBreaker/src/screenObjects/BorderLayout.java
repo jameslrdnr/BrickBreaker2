@@ -32,7 +32,7 @@ public class BorderLayout extends AbstractScreenObject{
     }
     
     public BorderLayout(float x, float y, int width, int height){
-        super(x, y, width, height, false, false);
+        super(x, y, width, height, (short)0, false, false);
         
         init();
         

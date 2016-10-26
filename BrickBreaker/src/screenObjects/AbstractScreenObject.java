@@ -20,7 +20,7 @@ public abstract class AbstractScreenObject {
     
     //global variable declarations
     //------------------------------------------------------------------
-    private final short idNum = 1;
+    private final short idNum;
     private float x, y, deltaX, deltaY;
     private final float initX, initY;
     private final float rX, bY;
@@ -32,7 +32,7 @@ public abstract class AbstractScreenObject {
     private int yMovementMultiplier = 1, xMovementMultiplier = 1, position, maxPosition;
     
     //init constructors
-    public AbstractScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput){
+    public AbstractScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, short id, boolean collisionTemp, boolean acceptingInput){
         x = xTemp;
         y = yTemp;
         initX = x;
@@ -45,6 +45,7 @@ public abstract class AbstractScreenObject {
         bY = y + height;
         collision = collisionTemp;
         this.acceptingInput = acceptingInput;
+        idNum = id;
     }
     
     public AbstractScreenObject(){
@@ -62,6 +63,7 @@ public abstract class AbstractScreenObject {
         acceptingInput = false;
         inputDelay = 0;
         delayInput = false;
+        idNum = 0;
     }
     
     //movement methods

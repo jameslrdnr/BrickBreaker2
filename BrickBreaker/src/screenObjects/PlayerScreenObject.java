@@ -24,15 +24,22 @@ public class PlayerScreenObject extends AbstractScreenObject {
     
     Color playerColor;
     boolean isPlayerColorRandom;
+    private int speed;
     
     ArrayList<Color> colorsArray;
     
     public PlayerScreenObject(){
         super();
+        init();
     }
     
     public PlayerScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput){
-        super(xTemp, yTemp, widthTemp, heightTemp, collisionTemp, acceptingInput);
+        super(xTemp, yTemp, widthTemp, heightTemp, (short)0, collisionTemp, acceptingInput);
+        
+        init();
+    }
+    
+    public void init(){
         setxMovementMultiplier(1);
         setyMovementMultiplier(1);
         
@@ -58,6 +65,7 @@ public class PlayerScreenObject extends AbstractScreenObject {
                 }
         }
         
+        speed = 2;
         
     }
 
@@ -73,11 +81,11 @@ public class PlayerScreenObject extends AbstractScreenObject {
         switch(inputMethod){
             case "default" : {
                 if(key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A){
-                    setDeltaX(-1);
+                    setDeltaX(-speed);
                        
                     }
                 else if(key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D){
-                    setDeltaX(1);
+                    setDeltaX(speed);
                        
                     }
                 }
@@ -103,7 +111,6 @@ public class PlayerScreenObject extends AbstractScreenObject {
             int randG = (int) (Math.random() * 200);
             int randB = (int) (Math.random() * 200);
             playerColor = new Color(randR, randG, randB);
-            playerColor.darker();
             
         }
         
@@ -146,4 +153,16 @@ public class PlayerScreenObject extends AbstractScreenObject {
         //light green
         colorsArray.add(new Color(95, 204, 31));
     }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
+    }
+    
+    
+    
+    
 }

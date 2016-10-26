@@ -24,6 +24,8 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     private final int defaultScreenWidth = 800;
     private final int defaultScreenHeight = 600;
+    private int delayCounter, timeToDelay;
+    private boolean delayAllInput;
     private int mouseX, mouseY;
     private BufferedImage back;
     private boolean enableMasterDebug;
@@ -49,10 +51,17 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         addMouseMotionListener(this);
         addKeyListener(this);
         setFocusable(true);
+        
+        
         //creates the three input lists
         inputList = new ArrayList<Integer>();
         dumpList = new ArrayList<Integer>();
         removeList = new ArrayList<Integer>();
+        
+        //default values for delaying input
+        delayCounter = 0;
+        timeToDelay = 0;
+        delayAllInput = false;
         
         //adds debug variables
         debug.setInputDelay(30);
@@ -157,23 +166,25 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     public ArrayList<Integer> handleInput(ArrayList<Integer> inputList){
         //adds all the new input keys to the list of currently pressed keys
-        for(int ob : getDumpList()){
-            if(inputList.contains(ob) == false)
-                inputList.add(ob);
-        }
-        
-        //removes all keys that have been released
-        for(int ob : getRemoveList()){
-            if(inputList.contains(ob)){
-                for(int i = 0; i < inputList.size(); i++){
-                    if(inputList.get(i) == ob){
-                        inputList.remove(i);
-                        i--;
+        if(delayAllInput == false){
+            for (int ob : getDumpList()) {
+                if (inputList.contains(ob) == false) {
+                    inputList.add(ob);
+                }
+            }
+
+            //removes all keys that have been released
+            for (int ob : getRemoveList()) {
+                if (inputList.contains(ob)) {
+                    for (int i = 0; i < inputList.size(); i++) {
+                        if (inputList.get(i) == ob) {
+                            inputList.remove(i);
+                            i--;
+                        }
                     }
                 }
             }
         }
-        
         //resets dump and remove lists
         getDumpList().clear();
         getRemoveList().clear();
@@ -194,6 +205,28 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     public void keyReleased(KeyEvent ke){
         if(getRemoveList().contains(ke.getKeyCode()) == false)
             getRemoveList().add(ke.getKeyCode());
+    }
+    
+    //all the input delay handling methods
+    
+    public void delayInputManager(){
+        
+        if(delayAllInput){
+            
+            setDelayCounter(getDelayCounter() + 1);
+
+            if (getDelayCounter() >= timeToDelay) {
+                setDelayCounter(0);
+                delayAllInput = false;
+            }
+            
+        }
+        
+    }
+    
+    public void delayInput(int time){
+        setTimeToDelay(time);
+        delayAllInput = true;
     }
     
     //ScreenObject ArrayList manipulating
@@ -287,6 +320,30 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
 
     public void setDebug(Debug debug) {
         this.debug = debug;
+    }
+
+    public int getDelayCounter() {
+        return delayCounter;
+    }
+
+    public void setDelayCounter(int delayCounter) {
+        this.delayCounter = delayCounter;
+    }
+
+    public int getTimeToDelay() {
+        return timeToDelay;
+    }
+
+    public void setTimeToDelay(int timeToDelay) {
+        this.timeToDelay = timeToDelay;
+    }
+    
+    public boolean isDelayAllInput() {
+        return delayAllInput;
+    }
+
+    public void setDelayAllInput(boolean delayAllInput) {
+        this.delayAllInput = delayAllInput;
     }
     
     
