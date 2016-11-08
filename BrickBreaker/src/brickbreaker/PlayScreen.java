@@ -7,11 +7,10 @@ package brickbreaker;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,8 +45,6 @@ public class PlayScreen extends AbstractScreen {
     private final Font scoreFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
     
     //########################
-    
-    //########################
     //map generation variables
     
     private BasicBrickObject[][][] masterChunk;
@@ -56,6 +53,13 @@ public class PlayScreen extends AbstractScreen {
     private float screenScrollSpeed;
     private String currentChunkGenType;
     private int chunkGenCount;
+    
+    private int BackroundMinDimension = 10;
+    private int backroundMaxDimensionDeviation = 6;
+    
+    
+    private int backroundObjectMaxMovementSpeed = 3;
+    private float backroundObjectSpawnRate = .01f;
     
     //########################
     
@@ -66,6 +70,8 @@ public class PlayScreen extends AbstractScreen {
 
     
     public PlayScreen(){
+        
+        super();
         
         init();
         
@@ -138,13 +144,9 @@ public class PlayScreen extends AbstractScreen {
         
         
         masterChunk[0] = generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount());
-        setCurrentChunkGenType("random");
         masterChunk[1] = generateChunk(getCurrentChunkGenType(), 1, getChunkGenCount());
-        setCurrentChunkGenType("random");
         masterChunk[2] = generateChunk(getCurrentChunkGenType(), 2, getChunkGenCount());
-        setCurrentChunkGenType("random");
         masterChunk[3] = generateChunk(getCurrentChunkGenType(), 3, getChunkGenCount());
-        setCurrentChunkGenType("random");
         masterChunk[4] = generateChunk(getCurrentChunkGenType(), 4, getChunkGenCount());
         
         //chunk1 = chunkInitRandomizer(chunk1, 0);
@@ -164,7 +166,7 @@ public class PlayScreen extends AbstractScreen {
             for (BasicBrickObject[] slice : chunk) {
                 for (BasicBrickObject piece : slice) {
 
-                    piece.moveY(-chunkHeight * 2);
+                    piece.moveYMultiply(-chunkHeight * 2);
 
                 }
             }
@@ -182,6 +184,10 @@ public class PlayScreen extends AbstractScreen {
         System.out.println("######");
         
         
+        getDebug().setIsVisible(false);
+        getDebug().setEnabled(false);
+        
+        
     }
     
     
@@ -189,8 +195,14 @@ public class PlayScreen extends AbstractScreen {
     void runLogic() {
         
         //pass mouse input to debug
+        if(getDebug().isEnabled()){
         getDebug().setMouseX(getMouseX());
         getDebug().setMouseY(getMouseY());
+        }
+        
+        //input
+        handleInput(getInputList());
+        delayInputManager();
         
         //handle score
         handleScore();
@@ -198,18 +210,33 @@ public class PlayScreen extends AbstractScreen {
         //move map tiles
         moveScreen();
         
-        //run logic() on all objects in objects array
-        runScreenObjectLogic();
-        
-        //input
-        handleInput(getInputList());
-        delayInputManager();
-        
         //run move() on all objects in objects array
         moveScreenObjects();
         
+        //run logic() on all objects in objects array
+        runScreenObjectLogic();
         
+        //generate all screenobjects that are proceduraly generated
+        generateScreenObjects();
         
+        //handle collision of player object
+        for(BasicBrickObject[][] chunk : masterChunk){
+            for(BasicBrickObject[] slice : chunk){
+                for(BasicBrickObject piece : slice){
+                    if(piece.isCollision()){
+                        if(player.testBoundingIntersection(piece.getCollisionShape())) {
+                            if (player.testIntersection(piece.getCollisionShape())) {
+                                
+                                //insert code for collision here
+                                setScore(getScore() - 5);
+                                piece.setCollision(false);
+                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         
     }
@@ -226,8 +253,10 @@ public class PlayScreen extends AbstractScreen {
         //draw screen objects
         drawScreenObjects(g);
         
+        
         //draws debug
-        getDebug().drawObject(g);
+        if(getDebug().isEnabled())
+            getDebug().drawObject(g);
         
         //draws score
         drawScore(g);
@@ -236,19 +265,17 @@ public class PlayScreen extends AbstractScreen {
 
     @Override
     public void specificInput(ArrayList<Integer> inputList) {
-        //pass input to screen objects
+        
+        //pass input to screen objects and debug
         for(int key : inputList){
+            
+            getDebug().inputHandler(getInputMethod(), key);
+            
             for (AbstractScreenObject ob : getObjectsArray()) {
                 ob.inputHandler(getInputMethod(), key);
             }
             
-            if(key == KeyEvent.VK_F){
-                setNextScreen('S');
-            }
-            
         }
-        
-        
         
     }
 
@@ -497,23 +524,20 @@ public class PlayScreen extends AbstractScreen {
         for (BasicBrickObject[][] tempChunk : masterChunk) {
             for (BasicBrickObject[] slice : tempChunk) {
                 for (BasicBrickObject piece : slice) {
-                    piece.moveY(screenScrollSpeed);
+                    piece.moveYMultiply(screenScrollSpeed);
+                    piece.move();
                 }
             }
         }
         
         for(int c = 0; c < masterChunk.length; c++){
             if(masterChunk[c][0][0].getY() > 900){
-                BasicBrickObject holder = masterChunk[c][0][0];
-                holder.setX(masterChunk[c][0][0].getX());
-                holder.setY(masterChunk[c][0][0].getY());
-                holder.setColor(Color.red);
-                holder.setIsVisible(true);
-                getObjectsArray().add(holder);
                 masterChunk[c] = generateChunk(getCurrentChunkGenType(), c, 0);
                 moveChunk(c, 0, -(chunkHeight * numChunks));
             }
         }
+        
+        
         
     }
     
@@ -521,25 +545,17 @@ public class PlayScreen extends AbstractScreen {
         
         for(BasicBrickObject[] slice : masterChunk[chunkPos]){
             for(BasicBrickObject piece : slice){
-                piece.moveX(deltaX);
-                piece.moveY(deltaY);
+                piece.moveXMultiply(deltaX);
+                piece.moveYMultiply(deltaY);
             }
         }
         
     }
     
     
-    
-    
-    
-    //######################
-    //getter/setter methods
-    
     public BasicBrickObject[][] generateChunk(String chunkType,int chunkNum, int chunkCount){
         
         BasicBrickObject[][] tempChunk = masterChunk[chunkNum];
-        
-        System.out.println(tempChunk[0][0].getY() + "  %%%%%%%%");
         
         //#################
         //add all types of chunks here along w/ logic manager to handle if its time to switch chunk types
@@ -560,7 +576,6 @@ public class PlayScreen extends AbstractScreen {
                 break;
             
         }
-        System.out.println(tempChunk[0][0].getY() + "  ********");
         
         //chunk debug
         /*
@@ -581,6 +596,108 @@ public class PlayScreen extends AbstractScreen {
         return tempChunk;
         
     }
+    
+    
+    
+    
+    //generation for the backrounds and other environmental graphics
+    
+    public void generateScreenObjects(){
+        
+        if(Math.random() <= backroundObjectSpawnRate){
+            generateBakcroundObject();
+            System.out.println("Spawned!");
+        }
+        
+    }
+    
+    public BasicBackroundObject generateBakcroundObject(){
+        float tempX = 0, tempY = 0;
+        float tempDX = 0, tempDY = 0;
+        
+        double randConst = Math.random();
+        
+        randConst = randConst * 4;
+        
+        //1 = N spawn quadrant, 2 = S spawn quadrant, 3 = W spawn quadrant, 4 = E spawn Quadrant
+        
+        if(randConst <= 1){
+            //north spawn quad
+            tempY = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10 - 100;
+            tempX = (float)Math.random() * BrickBreakerMain.SCREENWIDTH;
+            randConst = Math.random();
+            //wether deltaX is + or -
+            if(randConst < .5){
+                tempDX = (float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }else{
+                tempDX = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }
+            //DY must be +
+            tempDY = (float)(Math.random() * backroundObjectMaxMovementSpeed);
+            
+        } else if(randConst <= 2){
+            //south spawn quadrant
+            tempY = (BackroundMinDimension + backroundMaxDimensionDeviation) * 10 + 100;
+            tempX = (float)Math.random() * BrickBreakerMain.SCREENWIDTH;
+            randConst = Math.random();
+            //wether deltaX is + or -
+            if(randConst < .5){
+                tempDX = (float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }else{
+                tempDX = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }
+            //DY must be -
+            tempDY = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            
+        }else if(randConst <= 3){
+            //west spawn quadrant
+            tempX = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10 - 100;
+            tempY = (float)Math.random() * BrickBreakerMain.SCREENHEIGHT;
+            randConst = Math.random();
+            //wether deltaX is + or -
+            if(randConst < .5){
+                tempDY = (float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }else{
+                tempDY = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }
+            //DX must be +
+            tempDX = (float)(Math.random() * backroundObjectMaxMovementSpeed);
+            
+        }else if(randConst <=4){
+            //east spawn quadrant
+            tempX = (BackroundMinDimension + backroundMaxDimensionDeviation) * 10 + 100;
+            tempY = (float)Math.random() * BrickBreakerMain.SCREENHEIGHT;
+            randConst = Math.random();
+            //wether deltaX is + or -
+            if(randConst < .5){
+                tempDY = (float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }else{
+                tempDY = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            }
+            //DX must be -
+            tempDX = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            
+        }
+        
+        BasicBackroundObject newBackObj = new BasicBackroundObject(tempX, tempY,  (int)(Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension, (int)(Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension);
+        
+        newBackObj.setDeltaX(tempDX);
+        newBackObj.setDeltaY(tempDY);
+        newBackObj.setColor(Color.GRAY);
+        newBackObj.setCollision(false);
+        newBackObj.setIsVisible(true);
+        
+        getObjectsArray().add(newBackObj);
+        
+        return newBackObj;
+    }
+    
+    
+    
+    
+    //######################
+    //getter/setter methods
+    
 
     public float getCubeSpawnRate() {
         return cubeSpawnRate;

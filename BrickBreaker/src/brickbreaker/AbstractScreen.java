@@ -46,6 +46,20 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         //new arraylist for managing screen objects
         this.objectsArrayList = new ArrayList<AbstractScreenObject>();
         
+        abstractInit();
+        
+    }
+            
+    public AbstractScreen(ArrayList<AbstractScreenObject> objectsArrayList){
+        
+        this.objectsArrayList = objectsArrayList;
+        
+        abstractInit();
+        
+    }
+    
+    public void abstractInit(){
+        
         //adds basic size/listeners
         setSize(defaultScreenWidth, defaultScreenHeight);
         addMouseMotionListener(this);
@@ -58,20 +72,17 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         dumpList = new ArrayList<Integer>();
         removeList = new ArrayList<Integer>();
         
+        inputMethod = "default";
+        
         //default values for delaying input
         delayCounter = 0;
         timeToDelay = 0;
         delayAllInput = false;
         
         //adds debug variables
-        debug.setInputDelay(30);
+        debug.setInputDelay(10);
         
         nextScreen = ' ';
-        
-    }
-            
-    public AbstractScreen(ArrayList<AbstractScreenObject> objectsArrayList){
-        this.objectsArrayList = objectsArrayList;
     }
     
     //logic method
@@ -88,9 +99,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     //draws screen objects in the ScreenObject ArrayList
     public void drawScreenObjects(Graphics2D g){
         for(AbstractScreenObject ob : getObjectsArray()){
-            if(ob.getIsVisible()){
-                ob.drawObject(g);
-            }
+            ob.drawObject(g);
         }
     }
     //runs all the screen object logic methods
@@ -125,10 +134,11 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent((Graphics2D) g);
+        super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         //sets a new buffered image in memory to draw them
-        back = (BufferedImage)(createImage(getWidth(),getHeight()));
+        if(back == null)
+            back = (BufferedImage)(createImage(getWidth(),getHeight()));
         //creates graphics pointer to image in memory
 	Graphics2D gMemory = back.createGraphics();
         //clears screen
@@ -150,11 +160,11 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         g.setFont(font);
         FontMetrics metrics = g.getFontMetrics(font);
         String drawString = str;
-        int nX, nY;
+        int nX;
         nX = x - (metrics.stringWidth(str) / 2);
-        nY = y - (metrics.getHeight() / 2);
         
-        g.drawString(drawString, nX, nY);
+        
+        g.drawString(drawString, nX, y);
         
     }
     

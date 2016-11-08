@@ -5,8 +5,10 @@
  */
 package screenObjects;
 
+import static brickbreaker.BrickBreakerMain.getDebug;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 /**
  *
@@ -24,14 +26,21 @@ public class BasicBrickObject extends AbstractScreenObject{
     
     public void init(){
         
+        setCollision(false);
+        setIsVisible(false);
+        
         //set movement mulitpliers to equal width and height
         setxMovementMultiplier(10);
         setyMovementMultiplier(10);
+        
+        setCollisionShape(new Rectangle((int)getX(), (int)getY(), getWidth(), getHeight()));
         
     }
 
     @Override
     public void move() {
+        
+        ((Rectangle)getCollisionShape()).setLocation((int)getX(), (int)getY());
         
     }
 
@@ -50,10 +59,25 @@ public class BasicBrickObject extends AbstractScreenObject{
         
         Color tempC = g.getColor();
         
-        g.setColor(Color.BLACK);
-        g.fillRoundRect((int) getX(), (int) getY(), getWidth(), getHeight(), 1, 1);
+        if(getIsVisible()){
+        
         g.setColor(getColor());
-        g.fillRect((int) getX(), (int) getY(), getWidth()-2, getHeight()-2);
+        g.fillRect((int) getX(), (int) getY(), getWidth(), getHeight());
+        g.setColor(Color.BLACK);
+        g.drawRoundRect((int) getX(), (int) getY(), getWidth(), getHeight(), 1, 1);
+        
+        
+        }
+        
+        if (getDebug().isEnabled()) {
+            if (isCollision()) {
+                g.setColor(Color.GREEN);
+            } else {
+                g.setColor(Color.RED);
+            }
+
+            g.draw(getCollisionShape());
+        }
         
         g.setColor(tempC);
     }

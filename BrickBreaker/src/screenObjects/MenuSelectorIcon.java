@@ -89,7 +89,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
                     case KeyEvent.VK_DOWN :
                         //makes sure it will be in bounds
                         if(getPosition() < getMaxPosition()){
-                            moveY(+1);
+                            moveYMultiply(+1);
                             setPosition(getPosition() + 1);
                             setIsVisible(true);
                             blinkTimer = 0;
@@ -99,7 +99,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
                     case KeyEvent.VK_UP:
                         //makes sure it will be in bounds
                         if(getPosition() > 0){
-                            moveY(-1);
+                            moveYMultiply(-1);
                             setPosition(getPosition() - 1);
                             setIsVisible(true);
                             blinkTimer = 0;

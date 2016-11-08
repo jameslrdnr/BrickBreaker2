@@ -14,12 +14,24 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Properties;
 import javax.swing.JFrame;
+import screenObjects.Debug;
 
 /**
  *
  * @author JamesLaptop
  */
 public class BrickBreakerMain extends JFrame {
+    
+    //CONSTANTS
+    //------------------------------------------------------------------
+    
+    private static final String OPTIONSFILE = "src\\assets\\options.properties";
+    
+    public static final int SCREENWIDTH = 800;
+    public static final int SCREENHEIGHT = 600;
+    
+    //Variables
+    //------------------------------------------------------------------
     
     private AbstractScreen currentScreen;
     private KeyListener input;
@@ -28,16 +40,17 @@ public class BrickBreakerMain extends JFrame {
     private double now, lastTime, deltaTime;
     private double tickTimer;
     final double tickNum = 60D;
-    private double ns = 1000000000 / tickNum;
+    private final double ns = 1000000000 / tickNum;
     
+    
+    private static Debug debug;
     public static Properties options;
-    private static final String optionsFile = "src\\assets\\options.properties";
     
     public BrickBreakerMain(){
         //init the screen
         super("Breakin Bricks");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(800, 600));
+        setPreferredSize(new Dimension(SCREENWIDTH, SCREENHEIGHT));
         setResizable(false);
         currentScreen = new TitleScreen();
         
@@ -53,6 +66,9 @@ public class BrickBreakerMain extends JFrame {
         pack();
         
         setVisible(true);
+        
+        //init basic objects
+        debug = new Debug();
         
         //init the basic variables
         isPlaying = true;
@@ -220,7 +236,7 @@ public class BrickBreakerMain extends JFrame {
     //------------------------------------------------------------------
     public static void loadOptions() {
         try{
-            FileInputStream in = new FileInputStream(optionsFile);
+            FileInputStream in = new FileInputStream(OPTIONSFILE);
             options.load(in);
             in.close();
         }
@@ -234,13 +250,19 @@ public class BrickBreakerMain extends JFrame {
     public static void storeOptions(Properties optionsToSave){
         options = optionsToSave;
         try{
-            FileOutputStream out = new FileOutputStream(optionsFile);
-            options.store(out, optionsFile);
+            FileOutputStream out = new FileOutputStream(OPTIONSFILE);
+            options.store(out, OPTIONSFILE);
             out.close();
         }
         catch(Exception e){
             System.out.println("Error writing in options : " + e);
         }
+    }
+    
+    //ability to retrieve debug object across the entirety of the game
+    //-----------------------------------------------------------------
+    public static Debug getDebug(){
+        return debug;
     }
     
 }

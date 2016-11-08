@@ -6,11 +6,9 @@
 package screenObjects;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
+import java.awt.Shape;
+import java.awt.geom.Area;
 
 /**
  *
@@ -30,6 +28,7 @@ public abstract class AbstractScreenObject {
     private boolean isVisible, acceptingInput, delayInput; 
     private int inputDelay, inputFrameCounter;
     private int yMovementMultiplier = 1, xMovementMultiplier = 1, position, maxPosition;
+    private Shape collisionShape;
     
     //init constructors
     public AbstractScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, short id, boolean collisionTemp, boolean acceptingInput){
@@ -70,12 +69,20 @@ public abstract class AbstractScreenObject {
     //------------------------------------------------------------------
     public abstract void move();
     
-    public void moveX(float dX){
+    public void moveXMultiply(float dX){
         setX(getX() + dX * xMovementMultiplier);
     }
     
-    public void moveY(float dY){
+    public void moveX(float dX){
+        setX(getX() + dX);
+    }
+    
+    public void moveYMultiply(float dY){
         setY(getY() + dY * yMovementMultiplier);
+    }
+    
+    public void moveY(float dY){
+        setX(getX() + dY);
     }
     
     //object input handler methods
@@ -118,6 +125,34 @@ public abstract class AbstractScreenObject {
     
     //collision detection methods
     //------------------------------------------------------------------
+    
+    public boolean testBoundingIntersection(Shape tempShape){
+        Area areaA = new Area(getCollisionShape().getBounds2D());
+        areaA.intersect(new Area(tempShape.getBounds2D()));
+        return !areaA.isEmpty();
+    }
+    
+    public boolean testIntersection(Shape tempShape) {
+        Area areaA = new Area(getCollisionShape());
+        areaA.intersect(new Area(tempShape));
+        return !areaA.isEmpty();
+    }
+    
+    /*
+    public boolean testIntersection(Shape otherShape) {
+        Area areaA = new Area(getCollisionShape());
+        Area tempArea = areaA;
+        //temp area will equal a new area that is all the points that actually intersect
+        tempArea.intersect(new Area(otherShape));
+        //equals checks if they are the same, if not it returns false, which means there is a collision
+        return !areaA.equals(tempArea);
+    }
+    */
+
+
+    //ancient history lies here
+    
+    /*
     private boolean collidesWith(AbstractScreenObject ob){
         
         float otherX = ob.getX();
@@ -173,6 +208,10 @@ public abstract class AbstractScreenObject {
         }        
         return ' ';
     }
+    */
+    
+    
+    
     
     //graphics methods
     //------------------------------------------------------------------
@@ -329,7 +368,13 @@ public abstract class AbstractScreenObject {
     public void setCollision(boolean collision) {
         this.collision = collision;
     }
-    
-    
+
+    public Shape getCollisionShape() {
+        return collisionShape;
+    }
+
+    public void setCollisionShape(Shape collisionShape) {
+        this.collisionShape = collisionShape;
+    }
     
 }

@@ -5,6 +5,7 @@
  */
 package screenObjects;
 
+import brickbreaker.BrickBreakerMain;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -24,17 +25,30 @@ public class Debug extends AbstractScreenObject{
     private int mouseX, mouseY;
     private MouseMotionListener mouseMotionListener;
     private KeyListener keyListener;
+    private static boolean enabled = false;
+    
+    public Debug(){
+        super();
+        
+        init();
+    }
     
     public Debug(KeyListener ks){
         super();
+        
+        keyListener = ks;
+        
+        init();
+    }
+    
+    public void init(){
+        
         setX(40);
         setY(40);
         
         setAcceptingInput(true);
-        keyListener = ks;
-        setInputDelay(5);
+        setInputDelay(10);
     }
-    
 
     @Override
     public void move() {
@@ -45,8 +59,10 @@ public class Debug extends AbstractScreenObject{
         if(getAcceptingInput()){
             switch (inputMethod) {
                 case "default" :
+                    //F3 is the key for debug, enables or disables things respectively
                     if (key == KeyEvent.VK_F3) {
                         setIsVisible(!getIsVisible());
+                        setEnabled(!isEnabled());
                         delayInput(getInputDelay());
                     }
                     break;
@@ -63,7 +79,6 @@ public class Debug extends AbstractScreenObject{
     
     //master debug method (includes every debug method)
     public void masterDebug(Graphics g){
-        
         //get current game params
         Font gameFont = g.getFont();
         Color gameColor = g.getColor();
@@ -92,7 +107,8 @@ public class Debug extends AbstractScreenObject{
     //main draw method
     @Override
     public void drawObject(Graphics2D g) {
-        masterDebug(g);
+        if(enabled)
+            masterDebug(g);
     }
     
     //getter/setter methods
@@ -112,5 +128,23 @@ public class Debug extends AbstractScreenObject{
     public void setMouseY(int mouseY) {
         this.mouseY = mouseY;
     }
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public KeyListener getKeyListener() {
+        return keyListener;
+    }
+
+    public void setKeyListener(KeyListener keyListener) {
+        this.keyListener = keyListener;
+    }
+    
+    
     
 }
