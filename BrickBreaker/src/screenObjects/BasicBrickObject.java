@@ -40,6 +40,9 @@ public class BasicBrickObject extends AbstractScreenObject{
     @Override
     public void move() {
         
+        moveX(getDeltaX());
+        moveY(getDeltaY());
+        
         ((Rectangle)getCollisionShape()).setLocation((int)getX(), (int)getY());
         
     }

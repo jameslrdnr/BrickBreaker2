@@ -18,7 +18,7 @@ import java.awt.geom.RectangularShape;
 public class BasicBackroundObject extends AbstractScreenObject{
     
     private BasicBrickObject[][] dimensions;
-    private final float minSpawnrateBound = .45f, maxSpawnrateDifference = .1f;
+    private final float minSpawnrateBound = .5f, maxSpawnrateDifference = .1f;
     private final int minSmoothPasses = 1, maxSmoothPassDif = 1;
     private float spawnRate;
     private int smoothPasses;
@@ -117,14 +117,14 @@ public class BasicBackroundObject extends AbstractScreenObject{
     @Override
     public void move() {
         
-        setX(getX() + getDeltaX());
-        setX(getX() + getDeltaY());
+        moveX(getDeltaX());
+        moveY(getDeltaY());
         ((Rectangle)getCollisionShape()).setLocation((int)getX(), (int)getY());
         
         for(BasicBrickObject[] slice : dimensions){
             for(BasicBrickObject piece : slice){
-                piece.moveX(getDeltaX());
-                piece.moveY(getDeltaY());
+                piece.setDeltaX(getDeltaX());
+                piece.setDeltaY(getDeltaY());
                 piece.move();
             }
         }
