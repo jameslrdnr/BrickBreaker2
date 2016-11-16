@@ -7,7 +7,6 @@ package brickbreaker;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -48,8 +47,8 @@ public class TitleScreen extends AbstractScreen{
         
         //adds screen objects
         AbstractScreenObject tempOb;
-        tempOb = new MenuSelectorIcon(300, getHeight() / 2 - 27, 10, 10, 4, Color.WHITE, true, true);
-        addToObjectsArray(tempOb);
+        tempOb = new MenuSelectorIcon(300, getHeight() / 2, 10, 10, 4, Color.WHITE, true, true);
+        addToObjectsArray(SCREENOBJLAYER, tempOb);
         
     }
     
@@ -70,12 +69,12 @@ public class TitleScreen extends AbstractScreen{
         //moves all screen objects
         moveScreenObjects();
         
+        delayInputManager();
+        
     }
 
     //handles all screen specific drawing then parses through every AbstractScreenObject to draw them
     //------------------------------------------------------------------
-    
-    
     
     @Override
     public void drawGame(Graphics2D g) {
@@ -122,7 +121,7 @@ public class TitleScreen extends AbstractScreen{
             getDebug().inputHandler(getInputMethod(), key);
             
             //gives input to screen objects
-            for (AbstractScreenObject ob : getObjectsArray()) {
+            for (AbstractScreenObject ob : getObjectsList().get(SCREENOBJLAYER)) {
                 ob.inputHandler(getInputMethod(), key);
             }
 
@@ -134,7 +133,7 @@ public class TitleScreen extends AbstractScreen{
                     switch (key) {
 
                         case KeyEvent.VK_ENTER:
-                            for (AbstractScreenObject ob : getObjectsArray()) {
+                            for (AbstractScreenObject ob : getObjectsList().get(SCREENOBJLAYER)) {
                                 if (ob.getIdNum() == 1) {
                                     switch (ob.getPosition()) {
                                         case 0:
@@ -155,6 +154,10 @@ public class TitleScreen extends AbstractScreen{
                                     }
                                 }
                             }
+                            
+                        case KeyEvent.VK_F:
+                            delayInput(60);
+                            break;
                     }
 
                     break;

@@ -28,71 +28,64 @@ public class PlayScreen extends AbstractScreen {
 
     //#########################
     //all score stuff
-    
     //used for timers and score
     private final int framesPerSecond = 60;
-    
+
     //a constant which is the score gained every second
     private final double scorePerSecond = 1.0;
-    
+
     //how much score is added per frame off of time alone
     private final double scorePerFrame = scorePerSecond / framesPerSecond;
-    
+
     //score variable
     private double score;
-    
+
     //font used for drawing the score
     private final Font scoreFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
-    
+
     //########################
     //map generation variables
-    
-    private BasicBrickObject[][][] masterChunk;
     private final int chunkWidth = 79, chunkHeight = 40, numChunks = 5;
     private float cubeSpawnRate;
     private float screenScrollSpeed;
     private String currentChunkGenType;
     private int chunkGenCount;
-    
+
     private int BackroundMinDimension = 10;
     private int backroundMaxDimensionDeviation = 6;
-    
-    
-    private int backroundObjectMaxMovementSpeed = 3;
+
+    private float backroundObjectMaxMovementSpeedDeviation = 1.5f;
+    private float backroundObjectMinMovementSpeed = 1f;
     private float backroundObjectSpawnRate = .01f;
-    
+
     //########################
-    
     private Properties IDlist;
     private String IDMapLoc = "src/assets/ObjectIDMap.properties";
-    
+
     AbstractScreenObject player;
 
-    
-    public PlayScreen(){
-        
+    public PlayScreen() {
+
         super();
-        
+
         init();
-        
+
     }
-    
-    public void init(){
-        
+
+    public void init() {
+
         setVisible(true);
-        
+
         IDlist = new Properties();
-        
+
         //input handling
         setInputMethod("default");
-        
-        
+
         //adds player to screen objects
         player = new PlayerScreenObject(300, 300, 25, 25, true, true);
         player.setIsVisible(true);
-        getObjectsArray().add(player);
-        
-        
+        getObjectsList().get(PLAYERLAYER).add(player);
+
         //attempts to load idnumbers
         try {
             FileInputStream in = new FileInputStream(IDMapLoc);
@@ -106,193 +99,167 @@ public class PlayScreen extends AbstractScreen {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(PlayScreen.class.getName()).log(Level.SEVERE, "failed to retrive objectsID List", ex);
         }
-        
+
         //done with all file input/IO bullshit because fuck try catchs
         //#################################
-        
-        
-        
         //#################################
         //all map generation code here (includes speed/spawn vars)
-        
-        masterChunk = new BasicBrickObject[numChunks][chunkWidth][chunkHeight];
-        
         //create all the pieces themselves
         for (int t = 0; t < numChunks; t++) {
-            for (int x = 0; x < chunkWidth; x++) {
-                for (int y = chunkHeight-1; y >= 0; y--) {
-                    
-                    masterChunk[t][x][y] = new BasicBrickObject(x*10, -(y*10 + (chunkHeight * t * 10)) + 10, 10, 10);
+            for (int y = numChunks; y >= 0; y--) {
 
-                }
+                getObjectsList().get(MAPLAYER).add(new BasicBackroundObject(0, -(chunkHeight * t * 10), chunkWidth, chunkHeight));
+
             }
         }
-        
-        
+
         System.out.println("######@@@@@");
-        System.out.println(masterChunk[0][0][0].getY());
-        System.out.println(masterChunk[1][0][0].getY());
-        System.out.println(masterChunk[2][0][0].getY());
-        System.out.println(masterChunk[3][0][0].getY());
-        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(0).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(1).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(2).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(3).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(4).getY());
         System.out.println("######@@@@@");
-        
-        
+
         setCurrentChunkGenType("random");
-        
+
         cubeSpawnRate = .015f;
-        
-        
-        masterChunk[0] = generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount());
-        masterChunk[1] = generateChunk(getCurrentChunkGenType(), 1, getChunkGenCount());
-        masterChunk[2] = generateChunk(getCurrentChunkGenType(), 2, getChunkGenCount());
-        masterChunk[3] = generateChunk(getCurrentChunkGenType(), 3, getChunkGenCount());
-        masterChunk[4] = generateChunk(getCurrentChunkGenType(), 4, getChunkGenCount());
-        
+
+        ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(0)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
+        ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(1)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
+        ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(2)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
+        ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(3)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
+        ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(4)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
+
         //chunk1 = chunkInitRandomizer(chunk1, 0);
         //chunk2 = chunkInitRandomizer(chunk2, 4);
-        
         System.out.println("######^^");
-        System.out.println(masterChunk[0][0][0].getY());
-        System.out.println(masterChunk[1][0][0].getY());
-        System.out.println(masterChunk[2][0][0].getY());
-        System.out.println(masterChunk[3][0][0].getY());
-        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(0).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(1).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(2).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(3).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(4).getY());
         System.out.println("######^^");
-        
-        
+
         //move first chunk halfway off screen
-        for (BasicBrickObject[][] chunk : masterChunk) {
-            for (BasicBrickObject[] slice : chunk) {
-                for (BasicBrickObject piece : slice) {
+        for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
 
-                    piece.moveYMultiply(-chunkHeight * 2);
+            getObjectsList().get(MAPLAYER).get(i).moveYMultiply(-chunkHeight * 2);
 
-                }
-            }
         }
-        
+
         screenScrollSpeed = .4f;
-        
-        
+
         System.out.println("######");
-        System.out.println(masterChunk[0][0][0].getY());
-        System.out.println(masterChunk[1][0][0].getY());
-        System.out.println(masterChunk[2][0][0].getY());
-        System.out.println(masterChunk[3][0][0].getY());
-        System.out.println(masterChunk[4][0][0].getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(0).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(1).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(2).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(3).getY());
+        System.out.println(getObjectsList().get(MAPLAYER).get(4).getY());
         System.out.println("######");
-        
-        
+
         getDebug().setIsVisible(false);
         getDebug().setEnabled(false);
-        
-        
+
     }
-    
-    
+
     @Override
     void runLogic() {
-        
+
+        removeObjectsManager();
+
         //pass mouse input to debug
-        if(getDebug().isEnabled()){
-        getDebug().setMouseX(getMouseX());
-        getDebug().setMouseY(getMouseY());
+        if (getDebug().isEnabled()) {
+            getDebug().setMouseX(getMouseX());
+            getDebug().setMouseY(getMouseY());
         }
-        
+
         //input
         handleInput(getInputList());
         delayInputManager();
-        
+
         //handle score
         handleScore();
-        
+
         //move map tiles
         moveScreen();
-        
+
         //run move() on all objects in objects array
         moveScreenObjects();
-        
+
         //run logic() on all objects in objects array
         runScreenObjectLogic();
-        
+
         //generate all screenobjects that are proceduraly generated
         generateScreenObjects();
-        
+
         //handle collision of player object
-        for(BasicBrickObject[][] chunk : masterChunk){
-            for(BasicBrickObject[] slice : chunk){
-                for(BasicBrickObject piece : slice){
-                    if(piece.isCollision()){
-                        if(player.testBoundingIntersection(piece.getCollisionShape())) {
+        for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
+            for (BasicBrickObject[] slice : ((BasicBackroundObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
+                for (BasicBrickObject piece : slice) {
+                    if (piece.isCollision()) {
+                        if (player.testBoundingIntersection(piece.getCollisionShape())) {
                             if (player.testIntersection(piece.getCollisionShape())) {
-                                
+
                                 //insert code for collision here
                                 setScore(getScore() - 5);
                                 piece.setCollision(false);
-                                
+
                             }
                         }
                     }
                 }
             }
         }
-        
-        
     }
 
     @Override
     void drawGame(Graphics2D g) {
-        
+
         setBackground(Color.BLACK);
         g.setColor(Color.WHITE);
-        
-        //draws the map chunks
-        drawMap(masterChunk, g);
-        
+
         //draw screen objects
         drawScreenObjects(g);
-        
-        
+
+        //draws the map chunks
+        //drawMap(masterChunk, g);
+
         //draws debug
-        if(getDebug().isEnabled())
+        if (getDebug().isEnabled()) {
             getDebug().drawObject(g);
-        
+        }
+
         //draws score
         drawScore(g);
-        
+
     }
 
     @Override
     public void specificInput(ArrayList<Integer> inputList) {
-        
+
         //pass input to screen objects and debug
-        for(int key : inputList){
-            
+        for (int key : inputList) {
+
             getDebug().inputHandler(getInputMethod(), key);
-            
-            for (AbstractScreenObject ob : getObjectsArray()) {
-                ob.inputHandler(getInputMethod(), key);
+
+            for (ArrayList<AbstractScreenObject> list : getObjectsList()) {
+                for (AbstractScreenObject ob : list) {
+                    ob.inputHandler(getInputMethod(), key);
+                }
             }
-            
         }
-        
+
     }
 
-    
-    
-    
-    
-    
-    
     @Override
     public void keyTyped(KeyEvent ke) {
-        
+
     }
 
     @Override
     public void mouseDragged(MouseEvent me) {
-        
+
     }
 
     @Override
@@ -300,78 +267,56 @@ public class PlayScreen extends AbstractScreen {
         setMouseX(me.getX());
         setMouseY(me.getY());
     }
-    
-    
-    
-    
-    
-    
-    
+
     //will be called every frame to do all score handling
     private void handleScore() {
         //used just because it is easier to understand
         double scoreToAdd = 0;
-        
+
         //score over time
         scoreToAdd += scorePerFrame;
-        
+
         //add the score accrued this frame to the overall score
         score += scoreToAdd;
-        
-        
+
     }
 
     private void drawScore(Graphics2D g) {
         //inits
         Font initFont = g.getFont();
         Color initColor = g.getColor();
-        
+
         //change values to use
         g.setFont(scoreFont);
         g.setColor(Color.red);
-        
+
         //draw the score - NOTE - this line is aids
         g.drawString((long) score + "", getWidth() - g.getFontMetrics().stringWidth((long) score + "") - g.getFontMetrics().charWidth(0) / 2 - 10, g.getFontMetrics().getHeight() * 3 / 4);
-        
+
         //reset to inits
         g.setFont(initFont);
-            g.setColor(initColor);
+        g.setColor(initColor);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     //map draw methods
-    
-    public void drawMap(BasicBrickObject[][][] chunk, Graphics2D g){
-        
+    /*
+    public void drawMap(BasicBrickObject[][][] chunk, Graphics2D g) {
+
         for (BasicBrickObject[][] tempChunk : chunk) {
             for (BasicBrickObject[] slice : tempChunk) {
                 for (BasicBrickObject piece : slice) {
-                    if(piece.getIsVisible())
+                    if (piece.getIsVisible()) {
                         piece.drawObject(g);
+                    }
                 }
             }
         }
-        
-    }
-    
-    //map generation methods
 
-    
+    }
+    */
+
+    //map generation methods
     /*
     ###############################
     looks fucking awesome but doesnt serve our purpose
@@ -469,99 +414,93 @@ public class PlayScreen extends AbstractScreen {
         
     }
 
-*/
-    
-    public BasicBrickObject[][] generateSolidChunk(BasicBrickObject[][] chunk, boolean bool){
-        
-        for(BasicBrickObject[] slice : chunk){
-            for(BasicBrickObject piece : slice){
+     */
+    public BasicBrickObject[][] generateSolidChunk(BasicBrickObject[][] chunk, boolean bool) {
+
+        for (BasicBrickObject[] slice : chunk) {
+            for (BasicBrickObject piece : slice) {
                 piece.setIsVisible(bool);
                 piece.setCollision(bool);
             }
         }
-        
+
         return chunk;
-        
+
     }
-    
-    public BasicBrickObject[][] generateAlleyChunk(BasicBrickObject[][] inputChunk){
-        
+
+    public BasicBrickObject[][] generateAlleyChunk(BasicBrickObject[][] inputChunk) {
+
         BasicBrickObject[][] tempChunk = inputChunk;
-        
-        
-        
+
         return tempChunk;
-        
+
     }
-    
-    public BasicBrickObject[][] generateRandomPlacementChunk(BasicBrickObject[][] chunk){
-        
-        
-        
+
+    public BasicBrickObject[][] generateRandomPlacementChunk(BasicBrickObject[][] chunk) {
+
         for (int x = 0; x < chunk.length; x++) {
             for (int y = 0; y < chunk[x].length; y++) {
                 chunk[x][y].setColor(Color.WHITE);
                 chunk[x][y].setIsVisible(true);
                 chunk[x][y].setCollision(true);
-                
+
                 //see if it should be filled space
-                if(Math.random() > cubeSpawnRate){
+                if (Math.random() > cubeSpawnRate) {
                     chunk[x][y].setIsVisible(false);
                     chunk[x][y].setCollision(false);
                 }
-                
+
                 //debug stuff
                 //System.out.println(tempChunk[x][y].getIsVisible() + "## (" + x + "," + y + ")");
             }
         }
-        
+
         return chunk;
-        
+
     }
-    
-    public void moveScreen(){
+
+    public void moveScreen() {
+
         
-        for (BasicBrickObject[][] tempChunk : masterChunk) {
-            for (BasicBrickObject[] slice : tempChunk) {
+        for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
+            for (BasicBrickObject[] slice : ((BasicBackroundObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
                 for (BasicBrickObject piece : slice) {
                     piece.moveYMultiply(screenScrollSpeed);
                     piece.move();
                 }
             }
         }
-        
-        for(int c = 0; c < masterChunk.length; c++){
-            if(masterChunk[c][0][0].getY() > 900){
-                masterChunk[c] = generateChunk(getCurrentChunkGenType(), c, 0);
+
+        for (int c = 0; c < getObjectsList().get(MAPLAYER).size(); c++) {
+            if (getObjectsList().get(MAPLAYER).get(c).getY() > 900) {
+                ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(c)).setDimensions(generateChunk(getCurrentChunkGenType(), c, 0));
                 moveChunk(c, 0, -(chunkHeight * numChunks));
             }
         }
-        
-        
-        
+
     }
-    
-    public void moveChunk(int chunkPos, float deltaX, float deltaY){
-        
-        for(BasicBrickObject[] slice : masterChunk[chunkPos]){
-            for(BasicBrickObject piece : slice){
+
+    public void moveChunk(int chunkPos, float deltaX, float deltaY) {
+
+        for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
+        for (BasicBrickObject[] slice : ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
+            for (BasicBrickObject piece : slice) {
                 piece.moveXMultiply(deltaX);
                 piece.moveYMultiply(deltaY);
             }
         }
-        
+        }
+
     }
-    
-    
-    public BasicBrickObject[][] generateChunk(String chunkType,int chunkNum, int chunkCount){
-        
-        BasicBrickObject[][] tempChunk = masterChunk[chunkNum];
-        
+
+    public BasicBrickObject[][] generateChunk(String chunkType, int chunkNum, int chunkCount) {
+
+        BasicBrickObject[][] tempChunk = ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(chunkNum)).getDimensions();
+
         //#################
         //add all types of chunks here along w/ logic manager to handle if its time to switch chunk types
-        
-        switch(chunkType){
-            
+        switch (chunkType) {
+
             case "random":
                 tempChunk = generateRandomPlacementChunk(tempChunk);
                 break;
@@ -574,9 +513,9 @@ public class PlayScreen extends AbstractScreen {
             case "empty":
                 tempChunk = generateSolidChunk(tempChunk, false);
                 break;
-            
+
         }
-        
+
         //chunk debug
         /*
         
@@ -590,115 +529,118 @@ public class PlayScreen extends AbstractScreen {
             }
         }
 
-        */
-        
+         */
         //final vars to set/return
         return tempChunk;
-        
+
     }
-    
-    
-    
-    
+
     //generation for the backrounds and other environmental graphics
-    
-    public void generateScreenObjects(){
-        
-        if(Math.random() <= backroundObjectSpawnRate){
-            generateBakcroundObject();
-            System.out.println("Spawned!");
+    public void generateScreenObjects() {
+
+        if (Math.random() <= backroundObjectSpawnRate) {
+            if (Debug.isEnabled())
+                System.out.println("Spawned!");
+            getObjectsList().get(BACKROUNDOBJLAYER).add(generateBakcroundObject());
+            
         }
-        
+
     }
-    
-    public BasicBackroundObject generateBakcroundObject(){
+
+    public BasicBackroundObject generateBakcroundObject() {
         float tempX = 0, tempY = 0;
         float tempDX = 0, tempDY = 0;
-        
+        String spawnLoc = "Something went wrong";
         double randConst = Math.random();
-        
+
         randConst = randConst * 4;
-        
+
+        if (Debug.isEnabled()) {
+            System.out.println("randConst : " + randConst);
+        }
+
         //1 = N spawn quadrant, 2 = S spawn quadrant, 3 = W spawn quadrant, 4 = E spawn Quadrant
-        
-        if(randConst <= 1){
+        if (randConst <= 1) {
+            spawnLoc = "North";
             //north spawn quad
-            tempY = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10 - 100;
-            tempX = (float)Math.random() * BrickBreakerMain.SCREENWIDTH;
+            tempY = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10;
+            tempX = (float) Math.random() * BrickBreakerMain.SCREENWIDTH;
             randConst = Math.random();
             //wether deltaX is + or -
-            if(randConst < .5){
-                tempDX = (float)(Math.random() * backroundObjectMaxMovementSpeed);
-            }else{
-                tempDX = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            if (randConst < .5) {
+                tempDX = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
+            } else {
+                tempDX = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
             }
             //DY must be +
-            tempDY = (float)(Math.random() * backroundObjectMaxMovementSpeed);
-            
-        } else if(randConst <= 2){
+            tempDY = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+
+        } else if (randConst <= 2) {
+            spawnLoc = "South";
             //south spawn quadrant
-            tempY = (BackroundMinDimension + backroundMaxDimensionDeviation) * 10 + 100;
-            tempX = (float)Math.random() * BrickBreakerMain.SCREENWIDTH;
+            tempY = (BrickBreakerMain.SCREENHEIGHT);
+            tempX = (float) Math.random() * BrickBreakerMain.SCREENWIDTH;
             randConst = Math.random();
             //wether deltaX is + or -
-            if(randConst < .5){
-                tempDX = (float)(Math.random() * backroundObjectMaxMovementSpeed);
-            }else{
-                tempDX = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            if (randConst < .5) {
+                tempDX = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
+            } else {
+                tempDX = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
             }
             //DY must be -
-            tempDY = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
-            
-        }else if(randConst <= 3){
+            tempDY = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+
+        } else if (randConst <= 3) {
+            spawnLoc = "West";
             //west spawn quadrant
-            tempX = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10 - 100;
-            tempY = (float)Math.random() * BrickBreakerMain.SCREENHEIGHT;
+            tempX = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10;
+            tempY = (float) Math.random() * BrickBreakerMain.SCREENHEIGHT;
             randConst = Math.random();
             //wether deltaX is + or -
-            if(randConst < .5){
-                tempDY = (float)(Math.random() * backroundObjectMaxMovementSpeed);
-            }else{
-                tempDY = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            if (randConst < .5) {
+                tempDY = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
+            } else {
+                tempDY = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
             }
             //DX must be +
-            tempDX = (float)(Math.random() * backroundObjectMaxMovementSpeed);
-            
-        }else if(randConst <=4){
+            tempDX = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+
+        } else if (randConst <= 4) {
+            spawnLoc = "East";
             //east spawn quadrant
-            tempX = (BackroundMinDimension + backroundMaxDimensionDeviation) * 10 + 100;
-            tempY = (float)Math.random() * BrickBreakerMain.SCREENHEIGHT;
+            tempX = BrickBreakerMain.SCREENWIDTH;
+            tempY = (float) Math.random() * BrickBreakerMain.SCREENHEIGHT;
             randConst = Math.random();
             //wether deltaX is + or -
-            if(randConst < .5){
-                tempDY = (float)(Math.random() * backroundObjectMaxMovementSpeed);
-            }else{
-                tempDY = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
+            if (randConst < .5) {
+                tempDY = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
+            } else {
+                tempDY = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
             }
             //DX must be -
-            tempDX = -(float)(Math.random() * backroundObjectMaxMovementSpeed);
-            
+            tempDX = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+
         }
-        
-        BasicBackroundObject newBackObj = new BasicBackroundObject(tempX, tempY,  (int)(Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension, (int)(Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension);
-        
+
+        BasicBackroundObject newBackObj = new BasicBackroundObject(tempX, tempY, (int) (Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension, (int) (Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension);
+
         newBackObj.setDeltaX(tempDX);
         newBackObj.setDeltaY(tempDY);
-        newBackObj.setColor(Color.GRAY);
         newBackObj.setCollision(false);
         newBackObj.setIsVisible(true);
-        
-        getObjectsArray().add(newBackObj);
-        
+        newBackObj.setInitSpawnLoc(spawnLoc);
+
+        if (Debug.isEnabled()) {
+            System.out.println("DX : " + tempDX + " DY : " + tempDY);
+            System.out.println("Init Spawn Loc : " + spawnLoc);
+            System.out.println();
+        }
+
         return newBackObj;
     }
-    
-    
-    
-    
+
     //######################
     //getter/setter methods
-    
-
     public float getCubeSpawnRate() {
         return cubeSpawnRate;
     }
@@ -738,14 +680,5 @@ public class PlayScreen extends AbstractScreen {
     public void setScore(double score) {
         this.score = score;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
 }

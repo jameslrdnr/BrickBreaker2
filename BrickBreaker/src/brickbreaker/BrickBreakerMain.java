@@ -29,6 +29,8 @@ public class BrickBreakerMain extends JFrame {
     
     public static final int SCREENWIDTH = 800;
     public static final int SCREENHEIGHT = 600;
+    public static int FRAMEHEIGHT = SCREENHEIGHT;
+    public static int FRAMEWIDTH = SCREENWIDTH;
     
     //Variables
     //------------------------------------------------------------------
@@ -54,6 +56,15 @@ public class BrickBreakerMain extends JFrame {
         setResizable(false);
         currentScreen = new TitleScreen();
         
+        pack();
+        
+        
+        FRAMEHEIGHT = SCREENHEIGHT + (SCREENHEIGHT - getContentPane().getHeight());
+        FRAMEWIDTH = SCREENWIDTH + (SCREENWIDTH - getContentPane().getWidth());
+        
+        setPreferredSize(new Dimension(FRAMEWIDTH, FRAMEHEIGHT));
+        getContentPane().setPreferredSize(new Dimension(SCREENWIDTH, SCREENHEIGHT));
+                
         //init options and set to values from file
         options = new Properties();
         loadOptions();

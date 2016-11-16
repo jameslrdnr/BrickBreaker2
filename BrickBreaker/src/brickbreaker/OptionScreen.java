@@ -39,7 +39,7 @@ public class OptionScreen extends AbstractScreen {
         setFont(normalFont);
         
         tempOb = new BorderLayout(150, 150, 100, 30);
-        getObjectsArray().add(tempOb);
+        getObjectsList().add(tempOb);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class OptionScreen extends AbstractScreen {
             getDebug().inputHandler(getInputMethod(), key);
 
             //give the screen objects the input
-            for (AbstractScreenObject ob : getObjectsArray()) {
+            for (AbstractScreenObject ob : getObjectsList()) {
                 if (ob.getAcceptingInput()) {
                     ob.handleInput(getInputMethod(), key);
                 }

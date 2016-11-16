@@ -32,33 +32,45 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     private char nextScreen;
     //adds debug object
     private Debug debug = new Debug(this);
+    /*layers:
+    0 = backround layer
+    1 = backround OBJECT layer
+    2 = map layer
+    3 = screenobject layer
+    4 = player layer
+    */
+    public final byte BACKROUNDLAYER = 0, BACKROUNDOBJLAYER = 1, MAPLAYER = 2, SCREENOBJLAYER = 3, PLAYERLAYER = 4;
     
     
     //use this to determine if you are in a menu or the game and what controls to use because of that
     private String inputMethod;
     private ArrayList<Integer> inputList, dumpList, removeList;
     
-    private ArrayList<AbstractScreenObject> objectsArrayList;
+    private ArrayList<ArrayList<AbstractScreenObject>> objectsList  = new ArrayList<ArrayList<AbstractScreenObject>>();
     
     //constructors
     //------------------------------------------------------------------
     public AbstractScreen(){
         //new arraylist for managing screen objects
-        this.objectsArrayList = new ArrayList<AbstractScreenObject>();
         
         abstractInit();
         
     }
             
-    public AbstractScreen(ArrayList<AbstractScreenObject> objectsArrayList){
-        
-        this.objectsArrayList = objectsArrayList;
+    public AbstractScreen(ArrayList<ArrayList<AbstractScreenObject>> objectsArrayList){
         
         abstractInit();
+        
+        this.objectsList = objectsArrayList;
         
     }
     
     public void abstractInit(){
+        
+        //create the screenObjLists
+        for(int i = 0; i < 5; i++){
+        objectsList.add(new ArrayList<AbstractScreenObject>());
+    }
         
         //adds basic size/listeners
         setSize(defaultScreenWidth, defaultScreenHeight);
@@ -98,24 +110,45 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     //draws screen objects in the ScreenObject ArrayList
     public void drawScreenObjects(Graphics2D g){
-        for(AbstractScreenObject ob : getObjectsArray()){
-            ob.drawObject(g);
+        for(ArrayList<AbstractScreenObject> list : getObjectsList()){
+            for(AbstractScreenObject ob : list){
+                ob.drawObject(g);
+            }
         }
     }
     //runs all the screen object logic methods
     public void runScreenObjectLogic(){
         
+        removeObjectsManager();
+        
         getDebug().runLogic();
         
-        for(AbstractScreenObject ob : getObjectsArray()){
-            ob.runLogic();
+        for(ArrayList<AbstractScreenObject> list : getObjectsList()){
+            for(AbstractScreenObject ob : list){
+                ob.runLogic();
+            }
         }
+    
     }
     
+    public void removeObjectsManager(){
+
+        for (ArrayList<AbstractScreenObject> list : getObjectsList()) {
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).shouldDestroyObject()) {
+                    list.remove(i);
+                    i--;
+                }
+            }
+        }
+    }
+
     //runs all the screen object move methods
     public void moveScreenObjects(){
-        for(AbstractScreenObject ob : getObjectsArray()){
-            ob.move();
+        for (ArrayList<AbstractScreenObject> list : getObjectsList()) {
+            for (AbstractScreenObject ob : list) {
+                ob.move();
+            }
         }
     }
     
@@ -160,11 +193,12 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         g.setFont(font);
         FontMetrics metrics = g.getFontMetrics(font);
         String drawString = str;
-        int nX;
+        int nX, nY;
         nX = x - (metrics.stringWidth(str) / 2);
+        nY = y + (metrics.getHeight() / 2);
         
         
-        g.drawString(drawString, nX, y);
+        g.drawString(drawString, nX, nY);
         
     }
     
@@ -182,7 +216,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
                     inputList.add(ob);
                 }
             }
-
+        }
             //removes all keys that have been released
             for (int ob : getRemoveList()) {
                 if (inputList.contains(ob)) {
@@ -194,7 +228,6 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
                     }
                 }
             }
-        }
         //resets dump and remove lists
         getDumpList().clear();
         getRemoveList().clear();
@@ -242,22 +275,22 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     //ScreenObject ArrayList manipulating
     //------------------------------------------------------------------
     
-    public void addToObjectsArray(AbstractScreenObject obj){
-        objectsArrayList.add(obj);
+    public void addToObjectsArray(byte layer, AbstractScreenObject obj){
+        objectsList.get(layer).add(obj);
     }
     
-    public void removeToObjectsArray(int i){
-        objectsArrayList.remove(i);
+    public void removeToObjectsArray(byte layer, int i){
+        objectsList.get(layer).remove(i);
     }
     
-    public void removeToObjectsArray(AbstractScreenObject obj){
-        objectsArrayList.remove(obj);
+    public void removeToObjectsArray(byte layer, AbstractScreenObject obj){
+        objectsList.get(layer).remove(obj);
     }
     
     //getter/setter functions
     //------------------------------------------------------------------
-    public ArrayList<AbstractScreenObject> getObjectsArray(){
-        return this.objectsArrayList;
+    public ArrayList<ArrayList<AbstractScreenObject>> getObjectsList(){
+        return this.objectsList;
     }
     
     public int getMouseX(){

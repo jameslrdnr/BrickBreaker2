@@ -79,6 +79,8 @@ public class PlayerScreenObject extends AbstractScreenObject {
 
     public void init() {
         
+        setLayer(5);
+        
         speed = 2;
 
         setxMovementMultiplier(speed);

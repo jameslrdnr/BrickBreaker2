@@ -18,10 +18,11 @@ import java.awt.geom.RectangularShape;
 public class BasicBackroundObject extends AbstractScreenObject{
     
     private BasicBrickObject[][] dimensions;
-    private final float minSpawnrateBound = .5f, maxSpawnrateDifference = .1f;
+    private final float minSpawnrateBound = .55f, maxSpawnrateDifference = .1f;
     private final int minSmoothPasses = 1, maxSmoothPassDif = 1;
     private float spawnRate;
     private int smoothPasses;
+    private String initSpawnLoc;
     
     public BasicBackroundObject(float tempX, float tempY, int tempWidth, int tempHeight){
         
@@ -39,13 +40,17 @@ public class BasicBackroundObject extends AbstractScreenObject{
     
     public void init() {
         
+        //set graphical layer
+        setLayer(2);
+        
         //decides spawnrate of cubes in default generator based of a minimum and a max differential
         spawnRate = (float)( Math.random() * maxSpawnrateDifference) + minSpawnrateBound;
-        System.out.println(spawnRate);
         
         smoothPasses = (int)(Math.random() * maxSmoothPassDif) + minSmoothPasses;
         
         setCollisionShape(new Rectangle((int)getX(), (int)getY(), getWidth(), getHeight()));
+        
+        setColor(new Color(78, 9, 125));
 
         for (int x = 0; x < dimensions.length; x++) {
             for (int y = 0; y < dimensions[x].length; y++) {
@@ -138,7 +143,7 @@ public class BasicBackroundObject extends AbstractScreenObject{
 
     @Override
     public void runLogic() {
-
+        
     }
 
     @Override
@@ -154,7 +159,7 @@ public class BasicBackroundObject extends AbstractScreenObject{
             }
         }
         
-        if(brickbreaker.BrickBreakerMain.getDebug().isEnabled()){
+        if(Debug.isEnabled()){
             if(isCollision())
                 g.setColor(Color.GREEN);
             else
@@ -163,6 +168,36 @@ public class BasicBackroundObject extends AbstractScreenObject{
         }
         
     }
+
+    @Override
+    public boolean shouldDestroyObject() {
+        
+        if(Debug.isEnabled() && checkIsOffScreen(250)){
+            System.out.println("Obj removed : " + getX() + " : " + getY());
+        }
+        
+        //returns true if COMPLETELY out of bounds by 250 units
+        return checkIsOffScreen(250);
+        
+    }
+
+    public String getInitSpawnLoc() {
+        return initSpawnLoc;
+    }
+
+    public void setInitSpawnLoc(String initSpawnLoc) {
+        this.initSpawnLoc = initSpawnLoc;
+    }
+
+    public BasicBrickObject[][] getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(BasicBrickObject[][] dimensions) {
+        this.dimensions = dimensions;
+    }
+    
+    
     
 }
     

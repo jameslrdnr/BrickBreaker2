@@ -22,7 +22,15 @@ public abstract class AbstractScreenObject {
     private float x, y, deltaX, deltaY;
     private final float initX, initY;
     private final float rX, bY;
-    private int width, height;
+    /*layers:
+    0 = backround layer
+    1 = backround OBJECT layer
+    2 = map layer
+    3 = screenobject layer
+    4 = player layer
+    */
+    public final byte BACKROUNDLAYER = 0, BACKROUNDOBJLAYER = 1, MAPLAYER = 2, SCREENOBJLAYER = 3, PLAYERLAYER = 4;
+    private int width, height, layer;
     private boolean collision;
     private Color color;
     private boolean isVisible, acceptingInput, delayInput; 
@@ -65,6 +73,11 @@ public abstract class AbstractScreenObject {
         idNum = 0;
     }
     
+    //called to see if object should be removed
+    public boolean shouldDestroyObject(){
+        return false;
+    }
+    
     //movement methods
     //------------------------------------------------------------------
     public abstract void move();
@@ -82,7 +95,7 @@ public abstract class AbstractScreenObject {
     }
     
     public void moveY(float dY){
-        setX(getX() + dY);
+        setY(getY() + dY);
     }
     
     //object input handler methods
@@ -136,6 +149,22 @@ public abstract class AbstractScreenObject {
         Area areaA = new Area(getCollisionShape());
         areaA.intersect(new Area(tempShape));
         return !areaA.isEmpty();
+    }
+    
+    public Boolean checkIsOffScreen(int byAmount){
+        
+        if(getX() + getWidth() < 0 - byAmount){
+            return true;
+        }else if(getX() > brickbreaker.BrickBreakerMain.SCREENWIDTH + byAmount){
+            return true;
+        }else if(getY() + getHeight() < 0 - byAmount){
+            return true;
+        }else if(getY() > brickbreaker.BrickBreakerMain.SCREENHEIGHT + byAmount){
+            return true;
+        }
+        
+        return false;
+        
     }
     
     /*
@@ -375,6 +404,14 @@ public abstract class AbstractScreenObject {
 
     public void setCollisionShape(Shape collisionShape) {
         this.collisionShape = collisionShape;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public void setLayer(int layer) {
+        this.layer = layer;
     }
     
 }
