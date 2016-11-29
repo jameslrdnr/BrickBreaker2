@@ -102,6 +102,7 @@ public class BrickBreakerMain extends JFrame {
             
             lastTime = now;
             
+            //runs at 60FPS
             if(deltaTime >= 1){
                 
                 currentScreen.runLogic();

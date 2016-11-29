@@ -47,7 +47,7 @@ public class TitleScreen extends AbstractScreen{
         
         //adds screen objects
         AbstractScreenObject tempOb;
-        tempOb = new MenuSelectorIcon(300, getHeight() / 2, 10, 10, 4, Color.WHITE, true, true);
+        tempOb = new MenuSelectorIcon(320, getHeight() / 2, 10, 10, 4, Color.WHITE, true, true);
         addToObjectsArray(SCREENOBJLAYER, tempOb);
         
     }

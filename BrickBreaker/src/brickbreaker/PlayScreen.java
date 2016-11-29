@@ -8,7 +8,6 @@ package brickbreaker;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.FileInputStream;
@@ -45,7 +44,7 @@ public class PlayScreen extends AbstractScreen {
 
     //########################
     //map generation variables
-    private final int chunkWidth = 79, chunkHeight = 40, numChunks = 5;
+    private final int chunkWidth = 80, chunkHeight = 40, numChunks = 5;
     private float cubeSpawnRate;
     private float screenScrollSpeed;
     private String currentChunkGenType;
@@ -56,7 +55,7 @@ public class PlayScreen extends AbstractScreen {
 
     private float backroundObjectMaxMovementSpeedDeviation = 1.5f;
     private float backroundObjectMinMovementSpeed = 1f;
-    private float backroundObjectSpawnRate = .01f;
+    private float backroundObjectSpawnRate = .0015f;
 
     //########################
     private Properties IDlist;
@@ -105,12 +104,15 @@ public class PlayScreen extends AbstractScreen {
         //#################################
         //all map generation code here (includes speed/spawn vars)
         //create all the pieces themselves
+        setCurrentChunkGenType("random");
+
+        cubeSpawnRate = .015f;
+
         for (int t = 0; t < numChunks; t++) {
-            for (int y = numChunks; y >= 0; y--) {
 
-                getObjectsList().get(MAPLAYER).add(new BasicBackroundObject(0, -(chunkHeight * t * 10), chunkWidth, chunkHeight));
+            getObjectsList().get(MAPLAYER).add(new BasicMapObject(0, -(chunkHeight * t * 10) - chunkHeight * 10, chunkWidth, chunkHeight));
+            ((BasicMapObject) getObjectsList().get(MAPLAYER).get(t)).setChunkNum((short) t);
 
-            }
         }
 
         System.out.println("######@@@@@");
@@ -121,16 +123,13 @@ public class PlayScreen extends AbstractScreen {
         System.out.println(getObjectsList().get(MAPLAYER).get(4).getY());
         System.out.println("######@@@@@");
 
-        setCurrentChunkGenType("random");
-
-        cubeSpawnRate = .015f;
-
+        /*
         ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(0)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
         ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(1)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
         ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(2)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
         ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(3)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
         ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(4)).setDimensions(generateChunk(getCurrentChunkGenType(), 0, getChunkGenCount()));
-
+         */
         //chunk1 = chunkInitRandomizer(chunk1, 0);
         //chunk2 = chunkInitRandomizer(chunk2, 4);
         System.out.println("######^^");
@@ -141,14 +140,17 @@ public class PlayScreen extends AbstractScreen {
         System.out.println(getObjectsList().get(MAPLAYER).get(4).getY());
         System.out.println("######^^");
 
+        screenScrollSpeed = 2f;
+
         //move first chunk halfway off screen
         for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
 
             getObjectsList().get(MAPLAYER).get(i).moveYMultiply(-chunkHeight * 2);
+            getObjectsList().get(MAPLAYER).get(i).setDeltaY(screenScrollSpeed);
+            ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).setCubeSpawnRate(cubeSpawnRate);
+            ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).generateRandomPlacementChunk();
 
         }
-
-        screenScrollSpeed = .4f;
 
         System.out.println("######");
         System.out.println(getObjectsList().get(MAPLAYER).get(0).getY());
@@ -181,9 +183,6 @@ public class PlayScreen extends AbstractScreen {
         //handle score
         handleScore();
 
-        //move map tiles
-        moveScreen();
-
         //run move() on all objects in objects array
         moveScreenObjects();
 
@@ -193,9 +192,12 @@ public class PlayScreen extends AbstractScreen {
         //generate all screenobjects that are proceduraly generated
         generateScreenObjects();
 
+        //handle map chunks
+        chunkHandler();
+
         //handle collision of player object
         for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
-            for (BasicBrickObject[] slice : ((BasicBackroundObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
+            for (BasicBrickObject[] slice : ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
                 for (BasicBrickObject piece : slice) {
                     if (piece.isCollision()) {
                         if (player.testBoundingIntersection(piece.getCollisionShape())) {
@@ -224,7 +226,6 @@ public class PlayScreen extends AbstractScreen {
 
         //draws the map chunks
         //drawMap(masterChunk, g);
-
         //draws debug
         if (getDebug().isEnabled()) {
             getDebug().drawObject(g);
@@ -298,7 +299,6 @@ public class PlayScreen extends AbstractScreen {
         g.setColor(initColor);
     }
 
-    
     //map draw methods
     /*
     public void drawMap(BasicBrickObject[][][] chunk, Graphics2D g) {
@@ -314,8 +314,7 @@ public class PlayScreen extends AbstractScreen {
         }
 
     }
-    */
-
+     */
     //map generation methods
     /*
     ###############################
@@ -415,53 +414,9 @@ public class PlayScreen extends AbstractScreen {
     }
 
      */
-    public BasicBrickObject[][] generateSolidChunk(BasicBrickObject[][] chunk, boolean bool) {
-
-        for (BasicBrickObject[] slice : chunk) {
-            for (BasicBrickObject piece : slice) {
-                piece.setIsVisible(bool);
-                piece.setCollision(bool);
-            }
-        }
-
-        return chunk;
-
-    }
-
-    public BasicBrickObject[][] generateAlleyChunk(BasicBrickObject[][] inputChunk) {
-
-        BasicBrickObject[][] tempChunk = inputChunk;
-
-        return tempChunk;
-
-    }
-
-    public BasicBrickObject[][] generateRandomPlacementChunk(BasicBrickObject[][] chunk) {
-
-        for (int x = 0; x < chunk.length; x++) {
-            for (int y = 0; y < chunk[x].length; y++) {
-                chunk[x][y].setColor(Color.WHITE);
-                chunk[x][y].setIsVisible(true);
-                chunk[x][y].setCollision(true);
-
-                //see if it should be filled space
-                if (Math.random() > cubeSpawnRate) {
-                    chunk[x][y].setIsVisible(false);
-                    chunk[x][y].setCollision(false);
-                }
-
-                //debug stuff
-                //System.out.println(tempChunk[x][y].getIsVisible() + "## (" + x + "," + y + ")");
-            }
-        }
-
-        return chunk;
-
-    }
-
     public void moveScreen() {
 
-        
+        /*
         for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
             for (BasicBrickObject[] slice : ((BasicBackroundObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
                 for (BasicBrickObject piece : slice) {
@@ -478,46 +433,76 @@ public class PlayScreen extends AbstractScreen {
             }
         }
 
+         */
     }
 
     public void moveChunk(int chunkPos, float deltaX, float deltaY) {
 
         for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
-        for (BasicBrickObject[] slice : ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
-            for (BasicBrickObject piece : slice) {
-                piece.moveXMultiply(deltaX);
-                piece.moveYMultiply(deltaY);
+            for (BasicBrickObject[] slice : ((BasicBackroundObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
+                for (BasicBrickObject piece : slice) {
+                    piece.moveXMultiply(deltaX);
+                    piece.moveYMultiply(deltaY);
+                }
             }
-        }
         }
 
     }
 
-    public BasicBrickObject[][] generateChunk(String chunkType, int chunkNum, int chunkCount) {
+    public void chunkHandler() {
+        //chunk count is the number of chunks of a certain type to generate
 
-        BasicBrickObject[][] tempChunk = ((BasicBackroundObject)getObjectsList().get(MAPLAYER).get(chunkNum)).getDimensions();
+        for (int chunkNum = 0; chunkNum < numChunks; chunkNum++) {
 
-        //#################
-        //add all types of chunks here along w/ logic manager to handle if its time to switch chunk types
-        switch (chunkType) {
+            BasicMapObject obj = ((BasicMapObject) getObjectsList().get(MAPLAYER).get(chunkNum));
 
-            case "random":
-                tempChunk = generateRandomPlacementChunk(tempChunk);
-                break;
-            case "alley":
-                tempChunk = generateAlleyChunk(tempChunk);
-                break;
-            case "solid":
-                tempChunk = generateSolidChunk(tempChunk, true);
-                break;
-            case "empty":
-                tempChunk = generateSolidChunk(tempChunk, false);
-                break;
+            short behindPos;
+            if (obj.getChunkNum() == 0) {
+                behindPos = 4;
+            } else {
+                behindPos = (short) (obj.getChunkNum() - 1);
+            }
 
+            //checks to see if off the edge of the screen by at least --- pixels here------------
+            if (getObjectsList().get(MAPLAYER).get(chunkNum).getY() >= brickbreaker.BrickBreakerMain.SCREENHEIGHT) {
+                //
+                getObjectsList().get(MAPLAYER).get(chunkNum).moveY(-(chunkHeight * 4 * 10));
+                ((BasicMapObject) getObjectsList().get(MAPLAYER).get(chunkNum)).resetPieces();
+                ((BasicMapObject) getObjectsList().get(MAPLAYER).get(chunkNum)).setJustMoved(true);
+
+            }
+
+
+            if (obj.isJustMoved()) {
+                obj.setJustMoved(false);
+                obj.generateNewChunk((BasicMapObject) getObjectsList().get(MAPLAYER).get(behindPos), currentChunkGenType);
+                chunkGenCount--;
+            }
+
+            if (chunkGenCount <= 0) {
+
+                //rand int 0-3
+                int randHolder = (int) (Math.random() * 0);
+
+                if (randHolder == 0) {
+                    setCurrentChunkGenType("random");
+                } else if (randHolder == 1) {
+                    setCurrentChunkGenType("empty");
+                } else if (randHolder == 2) {
+                    setCurrentChunkGenType("solid");
+                } else if (randHolder == 3) {
+                    setCurrentChunkGenType("alley");
+                }
+
+                chunkGenCount = (int) (Math.random() * 3) + 4;
+
+            }
         }
 
-        //chunk debug
-        /*
+    }
+
+    //chunk debug
+    /*
         
         for(int x = 0; x < chunkWidth; x++){
             for(int y = 0; y < chunkHeight; y++){
@@ -529,20 +514,17 @@ public class PlayScreen extends AbstractScreen {
             }
         }
 
-         */
-        //final vars to set/return
-        return tempChunk;
-
-    }
-
+     */
+    //final vars to set/return
     //generation for the backrounds and other environmental graphics
     public void generateScreenObjects() {
 
         if (Math.random() <= backroundObjectSpawnRate) {
-            if (Debug.isEnabled())
+            if (Debug.isEnabled()) {
                 System.out.println("Spawned!");
+            }
             getObjectsList().get(BACKROUNDOBJLAYER).add(generateBakcroundObject());
-            
+
         }
 
     }

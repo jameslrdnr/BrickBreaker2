@@ -71,7 +71,8 @@ public class MenuSelectorIcon extends AbstractScreenObject {
     @Override
     public void drawObject(Graphics2D g) {
         
-        g.fillRect((int)getX(), (int)getY(), getWidth(), getHeight());
+        if(getIsVisible())
+            g.fillRect((int)getX(), (int)getY(), getWidth(), getHeight());
         
     }
     
