@@ -8,9 +8,7 @@ package brickbreaker;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-///import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
-//import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -22,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-//import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +31,7 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
 
     //Constants
     //------------------------------------------------------------------
-    private final int maxNameSize = 6;
+    private final int maxNameSize = 7;
     private final String fileName = "src\\assets\\HighScoresFile";
     private Font highScoresTitleFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
     private Font highScoresFont = new Font(Font.MONOSPACED, Font.BOLD, 24);
@@ -72,10 +69,12 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
         addScores();
     }
     
-    //Not used
+    // used
     //------------------------------------------------------------------
     @Override
-    public void runLogic() {}
+    public void runLogic() {
+        handleInput(getInputList());
+    }
 
     @Override
     public void drawGame(Graphics2D g) {
@@ -97,25 +96,34 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
             
             //Draw playerName
             drawCenteredString(g, playerName, getWidth() / 2, getHeight() / 2, highScoresFont);
+            
+            //Display instructions
+            drawCenteredString(g, "Hit ENTER to save your score or", getWidth() / 2, getHeight() * 5 / 6, highScoresFont);
+            drawCenteredString(g, "F10 to play again without saving", getWidth() / 2, getHeight() * 5 / 6 + highScoresFont.getSize(), highScoresFont);
         }
         
         else{
         	
             //Title
-            drawCenteredString(g, "Previous Highscores : ", getWidth() / 2, getHeight() / 4, highScoresTitleFont);
+            drawCenteredString(g, "Previous Highscores : ", getWidth() / 2, getHeight() / 6, highScoresTitleFont);
             
             g.setFont(highScoresFont);
+            
             //Draw top 10 scores
             for(int i = 0; i < 10 && i < scoresList.size(); i++){
                 //single digit numbers need two spaces
                 if(i < 9){ 
-                    g.drawString((i + 1) + ".  " + scoresList.get(i), getWidth() / 3, (getHeight() / 2) + (i * g.getFont().getSize()));
+                    g.drawString((i + 1) + ".  " + scoresList.get(i), getWidth() / 3, ((getHeight() * 1 / 4) + getFontMetrics(highScoresTitleFont).getHeight() / 2 + g.getFontMetrics().getHeight() * i));
                 }
                 else{
-                    g.drawString((i + 1) + ". " + scoresList.get(i), getWidth() / 3, (getHeight() / 2) + (i * g.getFont().getSize()));
+                    g.drawString((i + 1) + ". " + scoresList.get(i), getWidth() / 3, (getHeight() * 1 / 4) + getFontMetrics(highScoresTitleFont).getHeight() / 2 + g.getFontMetrics().getHeight() * i);
                 }
                 
             }
+            
+            //Display instructions
+            drawCenteredString(g, "Hit ESC to return to the ", getWidth() / 2, getHeight() * 5 / 6, highScoresFont);
+            drawCenteredString(g, "main menu or F10 to play again", getWidth() / 2, (getHeight() * 5 / 6) + highScoresFont.getSize(), highScoresFont);
         }
     }
 
@@ -124,13 +132,11 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
     @Override
     public void keyTyped(KeyEvent e) {}
 
-    @Override
-    public void keyPressed(KeyEvent e) {}
-
     //Handles name input
     //------------------------------------------------------------------
     @Override
     public void keyReleased(KeyEvent e) {
+        
         super.keyReleased(e);
         
         //flushes leftover keys from previous screens
@@ -150,23 +156,23 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
         if(typing){
             if(keyCode == KeyEvent.VK_BACK_SPACE && playerName.length() > 0){
                 playerName = playerName.substring(0, playerName.length()-1);
-              if(getEnableMasterDebug()){
+              if(BrickBreakerMain.getDebug().isEnabled()){
                   System.out.println("BackSpace");
               }
             }
-            else if(keyCode == KeyEvent.VK_ENTER){
+            else if(keyCode == KeyEvent.VK_ENTER && playerName.length() > 0){
                 typing = false;
                 scoresList.add(currentScore + " " + playerName);
                 writeScores();
                 
-              if(getEnableMasterDebug()){
+              if(BrickBreakerMain.getDebug().isEnabled()){
                   System.out.println("Enter");
               }
             }
             else if((Character.isUpperCase(keyChar) || Character.isLowerCase(keyChar) || Character.isDigit(keyChar)) && playerName.length() < maxNameSize){
                 playerName += (char)keyChar;
 
-              if(getEnableMasterDebug()){
+              if(BrickBreakerMain.getDebug().isEnabled()){
                   System.out.println("" + (char)keyChar);
               }                
             }
@@ -178,7 +184,7 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
             //enter playgame with or without saving
             setNextScreen('P');
             
-            if(getEnableMasterDebug()){
+            if(BrickBreakerMain.getDebug().isEnabled()){
                   System.out.println("F10");
             }  
             
@@ -187,22 +193,11 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
             //enter mainMenu with or without saving
             setNextScreen('T');
             
-            if(getEnableMasterDebug()){
+            if(BrickBreakerMain.getDebug().isEnabled()){
                 System.out.println("Escape");
             }  
         }
         
-        //toggle debug
-        //------------------------------------------------------------------
-        if(keyCode == KeyEvent.VK_F3){
-            //enable debug
-            setEnableMasterDebug(!getEnableMasterDebug());
-            
-            if(getEnableMasterDebug()){
-                  System.out.println("F3");
-            }  
-            
-        }
     }
     
     //Sorts arrayList of scores
@@ -322,8 +317,9 @@ public class HighScoresScreen extends AbstractScreen implements Comparator<Strin
     public void mouseMoved(MouseEvent e) {}
 
     @Override
-    public void specificInput(ArrayList<Integer> inputList) {
-        
+    public void specificInput(ArrayList<Integer> inputList, ArrayList<Integer> inputListReleased) {
+        BrickBreakerMain.getDebug().inputHandler(getInputMethod(), inputList, getInputMethodRemove(), inputListReleased);
+
     }
     
 

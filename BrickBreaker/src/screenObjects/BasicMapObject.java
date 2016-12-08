@@ -7,6 +7,7 @@ package screenObjects;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 
 /**
  *
@@ -99,7 +100,7 @@ public class BasicMapObject extends AbstractScreenObject {
     }
 
     @Override
-    public void handleInput(String inputMethod, int key) {
+    public void handleInput(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased) {
         
     }
 

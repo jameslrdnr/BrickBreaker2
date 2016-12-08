@@ -8,7 +8,9 @@ package screenObjects;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.util.ArrayList;
 
 /**
  *
@@ -32,11 +34,20 @@ public abstract class AbstractScreenObject {
     public final byte BACKROUNDLAYER = 0, BACKROUNDOBJLAYER = 1, MAPLAYER = 2, SCREENOBJLAYER = 3, PLAYERLAYER = 4;
     private int width, height, layer;
     private boolean collision;
-    private Color color;
+    //set default color
+    private Color color = Color.CYAN;
     private boolean isVisible, acceptingInput, delayInput; 
     private int inputDelay, inputFrameCounter;
     private int yMovementMultiplier = 1, xMovementMultiplier = 1, position, maxPosition;
     private Shape collisionShape;
+    private Shape myShape;
+    private BasicParticleSystem particleSys;
+    
+    
+    //array of rainbow colors
+    public static Color[] rainbowColors;
+
+
     
     //init constructors
     public AbstractScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, short id, boolean collisionTemp, boolean acceptingInput){
@@ -53,6 +64,10 @@ public abstract class AbstractScreenObject {
         collision = collisionTemp;
         this.acceptingInput = acceptingInput;
         idNum = id;
+        
+        //create and fill rainbowColors
+        rainbowColors = new Color[6];
+        addColors();
     }
     
     public AbstractScreenObject(){
@@ -71,6 +86,10 @@ public abstract class AbstractScreenObject {
         inputDelay = 0;
         delayInput = false;
         idNum = 0;
+        
+        //create and fill rainbowColors
+        rainbowColors = new Color[6];
+        addColors();
     }
     
     //called to see if object should be removed
@@ -102,12 +121,12 @@ public abstract class AbstractScreenObject {
     //------------------------------------------------------------------
     
     //this is the method the screen calls
-    public void inputHandler(String inputMethod, int key){
+    public void inputHandler(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased){
         //checks to see if accepting input at all
         if(getAcceptingInput()){
             //checks to see if input is delayed
             if(delayInput == false){
-                handleInput(inputMethod, key);
+                handleInput(inputMethod, inputList, inputMethodRemove, inputListReleased);
             }
         }
     }
@@ -129,7 +148,7 @@ public abstract class AbstractScreenObject {
     }
     
     //object specific input logic
-    public abstract void handleInput(String inputMethod, int key);
+    public abstract void handleInput(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased);
     
     //object logic methods
     //------------------------------------------------------------------
@@ -151,7 +170,7 @@ public abstract class AbstractScreenObject {
         return !areaA.isEmpty();
     }
     
-    public Boolean checkIsOffScreen(int byAmount){
+    public boolean checkIsOffScreen(int byAmount){
         
         if(getX() + getWidth() < 0 - byAmount){
             return true;
@@ -166,6 +185,30 @@ public abstract class AbstractScreenObject {
         return false;
         
     }
+    
+    //this is added later (looking at you garett) - K
+    public void addColors() {
+
+        //red
+        rainbowColors[0] = new Color(255, 0, 0);
+
+        //orange
+        rainbowColors[1] = new Color(255, 127, 0);
+
+        //yellow
+        rainbowColors[2] = new Color(255, 255, 0);
+
+        //green
+        rainbowColors[3] = new Color(0, 255, 0);
+
+        //blue - NOTE - not default blue due to being hard to see
+        rainbowColors[4] = new Color(0, 140, 255);
+
+        //violet
+        rainbowColors[5] = new Color(139, 0, 255);
+
+    }
+    
     
     /*
     public boolean testIntersection(Shape otherShape) {
@@ -405,6 +448,14 @@ public abstract class AbstractScreenObject {
     public void setCollisionShape(Shape collisionShape) {
         this.collisionShape = collisionShape;
     }
+    
+    public Shape getMyShape() {
+        return myShape;
+    }
+
+    public void setMyShape(Shape myShape) {
+        this.myShape = myShape;
+    }
 
     public int getLayer() {
         return layer;
@@ -412,6 +463,29 @@ public abstract class AbstractScreenObject {
 
     public void setLayer(int layer) {
         this.layer = layer;
+    }
+    
+    //Used to get the translated form of a shape
+    public void translateMyShape(float xTrans, float yTrans){
+        AffineTransform at = AffineTransform.getTranslateInstance(xTrans, yTrans);
+        Shape translatedShape = at.createTransformedShape(getMyShape());
+        setMyShape(translatedShape);
+    }
+    
+    
+    //Used to get the rotated form of a shape
+    public void rotateMyShape(float degrees, double xCoordinate, double yCooridate) {
+        AffineTransform at = AffineTransform.getRotateInstance(Math.toRadians(degrees), xCoordinate, yCooridate);
+        Shape rotatedShape = at.createTransformedShape(getMyShape());
+        setMyShape(rotatedShape);    
+    } 
+
+    public BasicParticleSystem getParticleSys() {
+        return particleSys;
+    }
+
+    public void setParticleSys(BasicParticleSystem particleSys) {
+        this.particleSys = particleSys;
     }
     
 }

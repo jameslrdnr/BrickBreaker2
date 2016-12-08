@@ -60,7 +60,7 @@ Font InstructionTitleFont = new Font(Font.MONOSPACED, Font.BOLD, 50);
     }
 
     @Override
-    public void specificInput(ArrayList<Integer> inputList) {
+    public void specificInput(ArrayList<Integer> inputList, ArrayList<Integer> inputListReleased) {
         
         for( int key : inputList){
             if(key == KeyEvent.VK_ESCAPE){

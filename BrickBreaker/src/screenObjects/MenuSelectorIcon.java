@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 /**
  *
@@ -78,40 +79,43 @@ public class MenuSelectorIcon extends AbstractScreenObject {
     
     //handle input method
     @Override
-    public void handleInput(String inputMethod, int key){
-        
-        switch(inputMethod){
-            
-            //default input handling
-            case "default" :
-                //handle arrowkey input
-                switch(key){
-                    
-                    case KeyEvent.VK_DOWN :
-                        //makes sure it will be in bounds
-                        if(getPosition() < getMaxPosition()){
-                            moveYMultiply(+1);
-                            setPosition(getPosition() + 1);
-                            setIsVisible(true);
-                            blinkTimer = 0;
-                            delayInput(getInputDelay());
+    public void handleInput(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased) {
+
+        if (getAcceptingInput()) {
+            for (Integer key : inputListReleased) {
+                switch (inputMethod) {
+
+                    //default input handling
+                    case "default":
+                        //handle arrowkey input
+                        switch (key) {
+
+                            case KeyEvent.VK_DOWN:
+                                //makes sure it will be in bounds
+                                if (getPosition() < getMaxPosition()) {
+                                    moveYMultiply(+1);
+                                    setPosition(getPosition() + 1);
+                                    setIsVisible(true);
+                                    blinkTimer = 0;
+                                    delayInput(getInputDelay());
+                                }
+                                break;
+                            case KeyEvent.VK_UP:
+                                //makes sure it will be in bounds
+                                if (getPosition() > 0) {
+                                    moveYMultiply(-1);
+                                    setPosition(getPosition() - 1);
+                                    setIsVisible(true);
+                                    blinkTimer = 0;
+                                    delayInput(getInputDelay());
+                                }
+                                break;
+
                         }
-                        break;
-                    case KeyEvent.VK_UP:
-                        //makes sure it will be in bounds
-                        if(getPosition() > 0){
-                            moveYMultiply(-1);
-                            setPosition(getPosition() - 1);
-                            setIsVisible(true);
-                            blinkTimer = 0;
-                            delayInput(getInputDelay());
-                        }
-                        break;
-                    
+
                 }
-            
+            }
         }
-        
     }
     
     //getter/setter methods

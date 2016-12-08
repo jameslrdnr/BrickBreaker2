@@ -42,6 +42,9 @@ public class PlayScreen extends AbstractScreen {
     //font used for drawing the score
     private final Font scoreFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
 
+    //score stuff
+    //########################
+    
     //########################
     //map generation variables
     private final int chunkWidth = 80, chunkHeight = 40, numChunks = 5;
@@ -83,6 +86,9 @@ public class PlayScreen extends AbstractScreen {
         //adds player to screen objects
         player = new PlayerScreenObject(300, 300, 25, 25, true, true);
         player.setIsVisible(true);
+        BasicParticleSystem ps = new BasicParticleSystem(300, 400, 5, 5, 1.5f, .3, 0);
+        ps.setColor(Color.GREEN);
+        player.setParticleSys(ps);
         getObjectsList().get(PLAYERLAYER).add(player);
 
         //attempts to load idnumbers
@@ -163,6 +169,8 @@ public class PlayScreen extends AbstractScreen {
         getDebug().setIsVisible(false);
         getDebug().setEnabled(false);
 
+        
+        
     }
 
     @Override
@@ -186,6 +194,8 @@ public class PlayScreen extends AbstractScreen {
         //run move() on all objects in objects array
         moveScreenObjects();
 
+        
+        
         //run logic() on all objects in objects array
         runScreenObjectLogic();
 
@@ -204,7 +214,7 @@ public class PlayScreen extends AbstractScreen {
                             if (player.testIntersection(piece.getCollisionShape())) {
 
                                 //insert code for collision here
-                                setScore(getScore() - 5);
+                                ((PlayerScreenObject)player).changeHealth(-5f);
                                 piece.setCollision(false);
 
                             }
@@ -212,6 +222,19 @@ public class PlayScreen extends AbstractScreen {
                     }
                 }
             }
+        }
+        
+        //shooting bullets
+        if(((PlayerScreenObject)player).isShooting()){
+            AbstractScreenObject bullet = new BulletScreenObject((float)((PlayerScreenObject)player).getMidIntersectPoint().getX(), (float)((PlayerScreenObject)player).getMidIntersectPoint().getY(), 15, 15, true, true, ((PlayerScreenObject)player).getDegrees(), ((PlayerScreenObject)player).getPlayerColor(), (int)(((PlayerScreenObject)player).getxMovementMultiplier() * ((PlayerScreenObject)player).getDeltaX()), (int)(((PlayerScreenObject)player).getyMovementMultiplier() * ((PlayerScreenObject)player).getDeltaY()));
+            bullet.setIsVisible(true);
+            getObjectsList().get(SCREENOBJLAYER).add(bullet);
+            ((PlayerScreenObject)player).setShooting(false);
+        }
+        
+        //END GAME CONDITION 
+        if(((PlayerScreenObject)player).getHealth() <= 0){
+            setNextScreen('S');
         }
     }
 
@@ -233,23 +256,24 @@ public class PlayScreen extends AbstractScreen {
 
         //draws score
         drawScore(g);
+        
+        //draws the player's health
+        drawHealth(g);
 
     }
 
     @Override
-    public void specificInput(ArrayList<Integer> inputList) {
+    public void specificInput(ArrayList<Integer> inputList, ArrayList<Integer> inputListReleased) {
 
         //pass input to screen objects and debug
-        for (int key : inputList) {
+        getDebug().inputHandler(getInputMethod(), inputList, getInputMethodRemove(), inputListReleased);
 
-            getDebug().inputHandler(getInputMethod(), key);
-
-            for (ArrayList<AbstractScreenObject> list : getObjectsList()) {
-                for (AbstractScreenObject ob : list) {
-                    ob.inputHandler(getInputMethod(), key);
-                }
+        for (ArrayList<AbstractScreenObject> list : getObjectsList()) {
+            for (AbstractScreenObject ob : list) {
+                ob.inputHandler(getInputMethod(), inputList, getInputMethodRemove(), inputListReleased);
             }
         }
+        //cycle through input for the screen below here----------
 
     }
 
@@ -267,6 +291,8 @@ public class PlayScreen extends AbstractScreen {
     public void mouseMoved(MouseEvent me) {
         setMouseX(me.getX());
         setMouseY(me.getY());
+        ((PlayerScreenObject)player).setMouseX(me.getX());
+        ((PlayerScreenObject)player).setMouseY(me.getY());
     }
 
     //will be called every frame to do all score handling
@@ -295,6 +321,27 @@ public class PlayScreen extends AbstractScreen {
         g.drawString((long) score + "", getWidth() - g.getFontMetrics().stringWidth((long) score + "") - g.getFontMetrics().charWidth(0) / 2 - 10, g.getFontMetrics().getHeight() * 3 / 4);
 
         //reset to inits
+        g.setFont(initFont);
+        g.setColor(initColor);
+    }
+    
+    private void drawHealth(Graphics2D g) {
+         //inits
+        Font initFont = g.getFont();
+        Color initColor = g.getColor();
+        
+        //change values to use
+        g.setFont(scoreFont);
+        g.setColor(Color.red);
+        
+        
+        //draw to rectangles with green on top of red to show health
+        g.fillRect(getWidth() / 32, getHeight() * 11 / 12, getWidth() / 8, getHeight() / 60);
+        g.setColor(Color.GREEN);
+        g.fillRect(getWidth() / 32, getHeight() * 11 / 12, (int)(getWidth() / 8.0 * ((PlayerScreenObject)player).getHealth() / ((PlayerScreenObject)player).getMaxHealth()), getHeight() / 60);
+        
+        
+         //reset to inits
         g.setFont(initFont);
         g.setColor(initColor);
     }

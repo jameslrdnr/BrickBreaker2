@@ -43,7 +43,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     
     //use this to determine if you are in a menu or the game and what controls to use because of that
-    private String inputMethod;
+    private String inputMethod, inputMethodRemove;
     private ArrayList<Integer> inputList, dumpList, removeList;
     
     private ArrayList<ArrayList<AbstractScreenObject>> objectsList  = new ArrayList<ArrayList<AbstractScreenObject>>();
@@ -69,8 +69,8 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         
         //create the screenObjLists
         for(int i = 0; i < 5; i++){
-        objectsList.add(new ArrayList<AbstractScreenObject>());
-    }
+            objectsList.add(new ArrayList<AbstractScreenObject>());
+        }
         
         //adds basic size/listeners
         setSize(defaultScreenWidth, defaultScreenHeight);
@@ -85,6 +85,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
         removeList = new ArrayList<Integer>();
         
         inputMethod = "default";
+        inputMethodRemove = "default";
         
         //default values for delaying input
         delayCounter = 0;
@@ -206,36 +207,37 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     //input functions
     //------------------------------------------------------------------
     
-    public abstract void specificInput(ArrayList<Integer> inputList);
+    public abstract void specificInput(ArrayList<Integer> inputList, ArrayList<Integer> inputListReleased);
     
-    public ArrayList<Integer> handleInput(ArrayList<Integer> inputList){
+    public ArrayList<Integer> handleInput(ArrayList<Integer> inputList) {
         //adds all the new input keys to the list of currently pressed keys
-        if(delayAllInput == false){
+        if (delayAllInput == false) {
             for (int ob : getDumpList()) {
                 if (inputList.contains(ob) == false) {
                     inputList.add(ob);
                 }
             }
         }
-            //removes all keys that have been released
-            for (int ob : getRemoveList()) {
-                if (inputList.contains(ob)) {
-                    for (int i = 0; i < inputList.size(); i++) {
-                        if (inputList.get(i) == ob) {
-                            inputList.remove(i);
-                            i--;
-                        }
+        //removes all keys that have been released
+        for (int ob : getRemoveList()) {
+            if (inputList.contains(ob)) {
+                for (int i = 0; i < inputList.size(); i++) {
+                    if (inputList.get(i) == ob) {
+                        inputList.remove(i);
+                        i--;
                     }
                 }
             }
+        }
         //resets dump and remove lists
+        //gives the current input to the specific input method
+        specificInput(inputList, getRemoveList());
+
         getDumpList().clear();
         getRemoveList().clear();
-        //gives the current input to the specific input method
-        specificInput(inputList);
-        
+
         return inputList;
-        
+
     }
     
     @Override
@@ -387,6 +389,14 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
 
     public void setDelayAllInput(boolean delayAllInput) {
         this.delayAllInput = delayAllInput;
+    }
+
+    public String getInputMethodRemove() {
+        return inputMethodRemove;
+    }
+
+    public void setInputMethodRemove(String inputMethodRemove) {
+        this.inputMethodRemove = inputMethodRemove;
     }
     
     

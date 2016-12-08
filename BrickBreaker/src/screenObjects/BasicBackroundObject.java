@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.RectangularShape;
+import java.util.ArrayList;
 
 /**
  *
@@ -137,7 +138,7 @@ public class BasicBackroundObject extends AbstractScreenObject{
     }
 
     @Override
-    public void handleInput(String inputMethod, int key){
+    public void handleInput(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased){
             
     }
 

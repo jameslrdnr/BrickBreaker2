@@ -13,6 +13,7 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 
 /**
  *
@@ -55,17 +56,20 @@ public class Debug extends AbstractScreenObject{
     }
 
     @Override
-    public void handleInput(String inputMethod, int key) {
-        if(getAcceptingInput()){
-            switch (inputMethod) {
-                case "default" :
-                    //F3 is the key for debug, enables or disables things respectively
-                    if (key == KeyEvent.VK_F3) {
-                        setIsVisible(!getIsVisible());
-                        setEnabled(!isEnabled());
-                        delayInput(getInputDelay());
-                    }
-                    break;
+    public void handleInput(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased) {
+        if (getAcceptingInput()) {
+            for (Integer key : inputListReleased) {
+                switch (inputMethodRemove) {
+
+                    case "default":
+                        //F3 is the key for debug, enables or disables things respectively
+                        if (key == KeyEvent.VK_F3) {
+                            setIsVisible(!getIsVisible());
+                            setEnabled(!isEnabled());
+                            delayInput(getInputDelay());
+                        }
+                        break;
+                }
             }
         }
     }

@@ -111,20 +111,19 @@ public class TitleScreen extends AbstractScreen{
     //------------------------------------------------------------------
     
     @Override
-    public void specificInput(ArrayList<Integer> inputList){
+    public void specificInput(ArrayList<Integer> inputList, ArrayList<Integer> inputListReleased){
         
         //copies input list to new list so it is not changed as it parses the input
-        
-        for(int key : inputList){
             
             //gives input to debug
-            getDebug().inputHandler(getInputMethod(), key);
+            getDebug().inputHandler(getInputMethod(), inputList, getInputMethodRemove(), inputListReleased);
             
             //gives input to screen objects
             for (AbstractScreenObject ob : getObjectsList().get(SCREENOBJLAYER)) {
-                ob.inputHandler(getInputMethod(), key);
+                ob.inputHandler(getInputMethod(), inputList, getInputMethodRemove(), inputListReleased);
             }
 
+            for(int key : inputList){
             //handles input for the screen depending on input method
             switch (getInputMethod()) {
 
@@ -168,8 +167,7 @@ public class TitleScreen extends AbstractScreen{
                     break;
 
             }
-
-        }
+            }
     }
     
     //this method handles almost everything
