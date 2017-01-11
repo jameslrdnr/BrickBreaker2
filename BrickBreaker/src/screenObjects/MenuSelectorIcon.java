@@ -23,7 +23,7 @@ public class MenuSelectorIcon extends AbstractScreenObject {
     
     public MenuSelectorIcon(int x, int y, int width, int height, int maxPosition, Color color, boolean blinking, boolean acceptingInput){
         
-        super(x, y, width, height, (short)1, false, false);
+        super(x, y, width, height, MENUSELECTORICONID, false, false);
         
         this.blinking = blinking;
         

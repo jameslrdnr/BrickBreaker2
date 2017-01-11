@@ -7,8 +7,6 @@ package brickbreaker;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,6 +24,7 @@ public class BrickBreakerMain extends JFrame {
     //------------------------------------------------------------------
     
     private static final String OPTIONSFILE = "src\\assets\\options.properties";
+    private static final String BGMUSICFILE = "src\\assets\\Theme.wav";
     
     public static final int SCREENWIDTH = 800;
     public static final int SCREENHEIGHT = 600;
@@ -48,6 +47,8 @@ public class BrickBreakerMain extends JFrame {
     private static Debug debug;
     public static Properties options;
     
+    MasterSound mS= new MasterSound();
+    
     public BrickBreakerMain(){
         //init the screen
         super("Breakin Bricks");
@@ -58,6 +59,7 @@ public class BrickBreakerMain extends JFrame {
         
         pack();
         
+        mS.setVolume();
         
         FRAMEHEIGHT = SCREENHEIGHT + (SCREENHEIGHT - getContentPane().getHeight());
         FRAMEWIDTH = SCREENWIDTH + (SCREENWIDTH - getContentPane().getWidth());
@@ -94,7 +96,11 @@ public class BrickBreakerMain extends JFrame {
     //------------------------------------------------------------------
     public void playGame(){
         
+        //mS.playBgMusic(BGMUSICFILE);
+        
         while(isPlaying){
+            
+            
             
             long now = System.nanoTime();
             
@@ -116,7 +122,7 @@ public class BrickBreakerMain extends JFrame {
                     //play case
                     case 'P' :
                         remove(currentScreen);
-                        currentScreen = new PlayScreen();
+                        currentScreen = new PlayScreen(SCREENWIDTH, SCREENHEIGHT);
                         add(currentScreen);
                         currentScreen.requestFocusInWindow();
                         g = currentScreen.getGraphics();

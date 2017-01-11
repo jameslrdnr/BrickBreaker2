@@ -10,7 +10,9 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  *
@@ -32,16 +34,40 @@ public abstract class AbstractScreenObject {
     4 = player layer
     */
     public final byte BACKROUNDLAYER = 0, BACKROUNDOBJLAYER = 1, MAPLAYER = 2, SCREENOBJLAYER = 3, PLAYERLAYER = 4;
+    
+    private static final String OBJECTIDFILE = "src\\assets\\ObjectIDMap.properties";
+    private static Properties OBJECTIDMAP;
+    /*ids:
+    0 = someone forgot to set a id
+    1 - 9 : random stuff
+    10-14 : particles
+    20-29 : enemies
+    30 - 49 : pickups
+    */
+    public static final byte MENUSELECTORICONID = 1,
+            BASICBACKGROUNDOBJECTID = 2,
+            BASICBRICKOBJECTID = 3,
+            BASICMAPOBJECTID = 4,
+            DEBUGID = 5,
+            PLAYERSCREENOBJECTID = 6,
+            BASICPLAYERBULLETSCREENOBJECTID = 7,
+            BASICPARTICLESYSTEMID = 10,
+            BASICPARTICLEID = 11,
+            BASICENEMYSCREENOBJECTID = 20,
+            BASICHEALTHPICKUPSCREENOBJECTID = 30,
+            BASICPOINTPICKUPSCREENOBJECTID = 31;
+    
     private int width, height, layer;
-    private boolean collision;
+    private boolean collision, Fading;
     //set default color
     private Color color = Color.CYAN;
     private boolean isVisible, acceptingInput, delayInput; 
-    private int inputDelay, inputFrameCounter;
+    private int inputDelay, inputFrameCounter, colorFadeTime, colorFadeTimer;
     private int yMovementMultiplier = 1, xMovementMultiplier = 1, position, maxPosition;
     private Shape collisionShape;
     private Shape myShape;
     private BasicParticleSystem particleSys;
+    private float rDif, gDif, bDif;
     
     
     //array of rainbow colors
@@ -51,6 +77,29 @@ public abstract class AbstractScreenObject {
     
     //init constructors
     public AbstractScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, short id, boolean collisionTemp, boolean acceptingInput){
+        
+//        OBJECTIDMAP = new Properties();
+//        try{
+//            FileInputStream in = new FileInputStream(OBJECTIDFILE);
+//            OBJECTIDMAP.load(in);
+//            in.close();
+//        }
+//        catch(Exception e){
+//            System.out.println("Error reading in OBJECTIDMAP : " + e);
+//        }
+//        MENUSELECTORICONID = Byte.parseByte(OBJECTIDMAP.getProperty("MENUSELECTORICONID"));
+//        BASICBACKGROUNDOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICBACKGROUNDOBJECTID"));
+//        BASICBRICKOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICBRICKOBJECTID"));
+//        BASICMAPOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICMAPOBJECTID"));
+//        DEBUGID = Byte.parseByte(OBJECTIDMAP.getProperty("DEBUGID"));
+//        PLAYERSCREENOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("PLAYERSCREENOBJECTID"));
+//        BASICPLAYERBULLETSCREENOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICPLAYERBULLETSCREENOBJECTID"));
+//        BASICPARTICLESYSTEMID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICPARTICLESYSTEMID"));
+//        BASICPARTICLEID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICPARTICLEID"));
+//        BASICENEMYSCREENOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICENEMYSCREENOBJECTID"));
+//        BASICHEALTHPICKUPSCREENOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICHEALTHPICKUPSCREENOBJECTID"));
+//        BASICPOINTPICKUPSCREENOBJECTID = Byte.parseByte(OBJECTIDMAP.getProperty("BASICPOINTPICKUPSCREENOBJECTID"));
+        
         x = xTemp;
         y = yTemp;
         initX = x;
@@ -64,6 +113,7 @@ public abstract class AbstractScreenObject {
         collision = collisionTemp;
         this.acceptingInput = acceptingInput;
         idNum = id;
+        Fading = false;
         
         //create and fill rainbowColors
         rainbowColors = new Color[6];
@@ -71,6 +121,9 @@ public abstract class AbstractScreenObject {
     }
     
     public AbstractScreenObject(){
+        
+        
+        
         x = 0;
         y = 0;
         initX = x;
@@ -86,7 +139,7 @@ public abstract class AbstractScreenObject {
         inputDelay = 0;
         delayInput = false;
         idNum = 0;
-        
+        Fading = false;
         //create and fill rainbowColors
         rainbowColors = new Color[6];
         addColors();
@@ -289,6 +342,13 @@ public abstract class AbstractScreenObject {
     //------------------------------------------------------------------
     public abstract void drawObject(Graphics2D g);
     
+    public void fadeToColor(Color c2){
+        rDif = (c2.getRed() - getColor().getRed()) / colorFadeTimer;
+        gDif = (c2.getGreen() - getColor().getGreen()) / colorFadeTimer;
+        bDif = (c2.getBlue() - getColor().getBlue()) / colorFadeTimer;
+        
+        Fading = true;
+    }
     
     
     //getter/setter methods here
@@ -487,5 +547,43 @@ public abstract class AbstractScreenObject {
     public void setParticleSys(BasicParticleSystem particleSys) {
         this.particleSys = particleSys;
     }
+
+    public int getColorFadeTime() {
+        return colorFadeTime;
+    }
+
+    public void setColorFadeTime(int colorFadeTime) {
+        this.colorFadeTime = colorFadeTime;
+    }
+
+    public int getColorFadeTimer() {
+        return colorFadeTimer;
+    }
+
+    public void setColorFadeTimer(int colorFadeTimer) {
+        this.colorFadeTimer = colorFadeTimer;
+    }
+
+    public boolean isFading() {
+        return Fading;
+    }
+
+    public void setFading(boolean isFading) {
+        this.Fading = isFading;
+    }
+
+    public float getrDif() {
+        return rDif;
+    }
+
+    public float getgDif() {
+        return gDif;
+    }
+
+    public float getbDif() {
+        return bDif;
+    }
+    
+    
     
 }

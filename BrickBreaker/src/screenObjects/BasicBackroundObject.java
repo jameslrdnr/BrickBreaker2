@@ -5,11 +5,10 @@
  */
 package screenObjects;
 
+import brickbreaker.AbstractScreen;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.RectangularShape;
 import java.util.ArrayList;
 
 /**
@@ -23,17 +22,14 @@ public class BasicBackroundObject extends AbstractScreenObject{
     private final int minSmoothPasses = 1, maxSmoothPassDif = 1;
     private float spawnRate;
     private int smoothPasses;
+    private Color[] colors;
     private String initSpawnLoc;
     
     public BasicBackroundObject(float tempX, float tempY, int tempWidth, int tempHeight){
+        super(tempX, tempY, tempWidth, tempHeight, BASICBACKGROUNDOBJECTID, false, false);
         
         dimensions = new BasicBrickObject[tempWidth][tempHeight];
         
-        setX(tempX);
-        setY(tempY);
-        
-        setWidth(tempWidth * 10);
-        setHeight(tempHeight * 10);
         
         init();
         
@@ -44,6 +40,14 @@ public class BasicBackroundObject extends AbstractScreenObject{
         //set graphical layer
         setLayer(2);
         
+        //sets color options
+        colors = new Color[5];
+        colors[0] = new Color(81, 82, 91);
+        colors[1] = new Color(64, 64, 73);
+        colors[2] = new Color(85, 85, 96);
+        colors[3] = new Color(99, 99, 107);
+        colors[4] = new Color(79, 80, 84);
+        
         //decides spawnrate of cubes in default generator based of a minimum and a max differential
         spawnRate = (float)( Math.random() * maxSpawnrateDifference) + minSpawnrateBound;
         
@@ -51,14 +55,14 @@ public class BasicBackroundObject extends AbstractScreenObject{
         
         setCollisionShape(new Rectangle((int)getX(), (int)getY(), getWidth(), getHeight()));
         
-        setColor(new Color(78, 9, 125));
+        setColor(new Color(Color.PINK.getRGB()));
 
         for (int x = 0; x < dimensions.length; x++) {
             for (int y = 0; y < dimensions[x].length; y++) {
                 //add the brick object in
                 dimensions[x][y] = new BasicBrickObject(getX() + x * 10, getY() + y * 10, 10, 10);
                 dimensions[x][y].setIsVisible(false);
-                dimensions[x][y].setColor(getColor());
+                dimensions[x][y].setColor(colors[(int)(Math.random() * 5)]);
                 dimensions[x][y].setDeltaX(getDeltaX());
                 dimensions[x][y].setDeltaY(getDeltaY());
                 //sets border of object to open space no matter what

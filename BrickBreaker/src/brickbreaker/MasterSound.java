@@ -17,7 +17,7 @@ public class MasterSound {
 //    private String volume=options.getProperty("volume");
     //private int lvl = Integer.getInteger(volume);
     //int soundEffectNum=0;
-    private float vol = (float)(5-5)*-4;
+    private float vol = (float)((5-5)*-4)+25;
     
     ArrayList<Noise> sounds = new ArrayList<>();
     //sounds.add(bgSong);
@@ -45,7 +45,7 @@ public class MasterSound {
        /* if(bgSong.isPlaying()){
             bgSong.close();
         }*/
-        bgSong = new Noise(0,filename);
+        bgSong = new Noise(vol,filename);
         sounds.add(bgSong);
         bgSong.loop();
     }

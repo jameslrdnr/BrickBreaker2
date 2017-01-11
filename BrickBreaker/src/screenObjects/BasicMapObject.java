@@ -25,18 +25,15 @@ public class BasicMapObject extends AbstractScreenObject {
 
     public BasicMapObject(){
         
-        super(0,0,0,0,(short)0,false,false);
+        super(0,0,0,0,BASICMAPOBJECTID,false,false);
         
         init();
         
     }
     
     public BasicMapObject(float x, float y, int width, int height){
-        
-        setX(x);
-        setY(y);
-        setWidth(width);
-        setHeight(height);
+        super(x, y, width, height, BASICMAPOBJECTID, false, false);
+
         setDeltaX(0);
         setDeltaY(0);
         
@@ -45,11 +42,8 @@ public class BasicMapObject extends AbstractScreenObject {
     }
     
     public BasicMapObject(float x, float y, int width, int height, float dX, float dY){
+        super(x, y, width, height, BASICMAPOBJECTID, false, false);
         
-        setX(x);
-        setY(y);
-        setWidth(width);
-        setHeight(height);
         setDeltaX(dX);
         setDeltaY(dY);
         
@@ -119,11 +113,13 @@ public class BasicMapObject extends AbstractScreenObject {
         }
         Color tempG = g.getColor();
         if(Debug.isEnabled()){
-            if(isCollision())
+            if(isCollision()){
                 g.setColor(Color.GREEN);
-            else
-                g.setColor(Color.RED);
-            g.fillRect((int)getX(), (int)getY(), 35, 35);
+                g.fillRect((int)getX(), (int)getY(), 35, 35);
+            }
+//            else
+//                g.setColor(Color.RED);
+//            g.fillRect((int)getX(), (int)getY(), 35, 35);
         }
         
     }

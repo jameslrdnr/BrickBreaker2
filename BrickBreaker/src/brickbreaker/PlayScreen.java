@@ -39,15 +39,16 @@ public class PlayScreen extends AbstractScreen {
     //score variable
     private double score;
 
-    //font used for drawing the score
+    //fonts used for drawing anything
     private final Font scoreFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
+    private final Font titleFont = new Font(Font.MONOSPACED, Font.BOLD, 32);
 
     //score stuff
     //########################
     
     //########################
     //map generation variables
-    private final int chunkWidth = 80, chunkHeight = 40, numChunks = 5;
+    private final int chunkWidth = 80, chunkHeight = 40, numChunks = 5, screenWidth, screenHeight;
     private float cubeSpawnRate;
     private float screenScrollSpeed;
     private String currentChunkGenType;
@@ -59,17 +60,28 @@ public class PlayScreen extends AbstractScreen {
     private float backroundObjectMaxMovementSpeedDeviation = 1.5f;
     private float backroundObjectMinMovementSpeed = 1f;
     private float backroundObjectSpawnRate = .0015f;
+    
+    private int backroundStarNum = 300;
 
     //########################
     private Properties IDlist;
     private String IDMapLoc = "src/assets/ObjectIDMap.properties";
+    
+    private double basicEnemySpawnRate, healthPickupSpawnRate, pointPickupSpawnRate;
+    
+    //other variables
+    private Color[] explosionColors;
+    
 
     AbstractScreenObject player;
 
-    public PlayScreen() {
+    public PlayScreen(int w, int h) {
 
         super();
 
+        screenWidth = w;
+        screenHeight = h;
+        
         init();
 
     }
@@ -86,9 +98,6 @@ public class PlayScreen extends AbstractScreen {
         //adds player to screen objects
         player = new PlayerScreenObject(300, 300, 25, 25, true, true);
         player.setIsVisible(true);
-        BasicParticleSystem ps = new BasicParticleSystem(300, 400, 5, 5, 1.5f, .3, 0);
-        ps.setColor(Color.GREEN);
-        player.setParticleSys(ps);
         getObjectsList().get(PLAYERLAYER).add(player);
 
         //attempts to load idnumbers
@@ -113,7 +122,25 @@ public class PlayScreen extends AbstractScreen {
         setCurrentChunkGenType("random");
 
         cubeSpawnRate = .015f;
+        basicEnemySpawnRate = 100.0;
+        healthPickupSpawnRate = .001;
+        pointPickupSpawnRate = .011;
+        
+        //spawn backround stars
 
+        for(int i = 0; i < backroundStarNum; i++){
+            int blinker = (int)(Math.random() * 120) + 240;
+            BasicBrickObject tempOb = new BasicBrickObject((int)(Math.random() * screenWidth), (int)(Math.random() * screenHeight), (int)(Math.random() * 3) + 1, (int)(Math.random() * 3) + 1);
+            tempOb.setBlinkTimer(blinker);
+            tempOb.setBlinkTime((int)(Math.random() * blinker));
+            tempOb.setBlinking(true);
+            if(Math.random() > .5)
+                tempOb.setIsVisible(true);
+            tempOb.setColor(Color.WHITE);
+            getObjectsList().get(BACKROUNDLAYER).add(tempOb);
+        }
+        
+        //spawn map chunks
         for (int t = 0; t < numChunks; t++) {
 
             getObjectsList().get(MAPLAYER).add(new BasicMapObject(0, -(chunkHeight * t * 10) - chunkHeight * 10, chunkWidth, chunkHeight));
@@ -169,15 +196,18 @@ public class PlayScreen extends AbstractScreen {
         getDebug().setIsVisible(false);
         getDebug().setEnabled(false);
 
-        
+        explosionColors = new Color[3];
+        explosionColors[0] = Color.RED;
+        //yellow
+        explosionColors[1] = new Color(237, 229, 80);
+        //orange
+        explosionColors[2] = new Color(234, 164, 42);
         
     }
 
     @Override
     void runLogic() {
-
-        removeObjectsManager();
-
+        
         //pass mouse input to debug
         if (getDebug().isEnabled()) {
             getDebug().setMouseX(getMouseX());
@@ -185,56 +215,114 @@ public class PlayScreen extends AbstractScreen {
         }
 
         //input
-        handleInput(getInputList());
         delayInputManager();
+        handleInput(getInputList());
 
-        //handle score
-        handleScore();
+        //all logic dependant on pausing
+        if (!isPaused()) {
 
-        //run move() on all objects in objects array
-        moveScreenObjects();
+            removeObjectsManager();
 
-        
-        
-        //run logic() on all objects in objects array
-        runScreenObjectLogic();
+            //handle score
+            handleScore();
 
-        //generate all screenobjects that are proceduraly generated
-        generateScreenObjects();
+            //run move() on all objects in objects array
+            moveScreenObjects();
 
-        //handle map chunks
-        chunkHandler();
+            //run logic() on all objects in objects array
+            runScreenObjectLogic();
 
-        //handle collision of player object
-        for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
-            for (BasicBrickObject[] slice : ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
-                for (BasicBrickObject piece : slice) {
-                    if (piece.isCollision()) {
-                        if (player.testBoundingIntersection(piece.getCollisionShape())) {
-                            if (player.testIntersection(piece.getCollisionShape())) {
+            //generate all screenobjects that are proceduraly generated
+            generateScreenObjects();
 
-                                //insert code for collision here
-                                ((PlayerScreenObject)player).changeHealth(-5f);
-                                piece.setCollision(false);
+            //handle map chunks
+            chunkHandler();
 
+            //handle collision of player object
+            for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
+                for (BasicBrickObject[] slice : ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
+                    for (BasicBrickObject piece : slice) {
+                        if (piece.isCollision()) {
+                            if (player.testBoundingIntersection(piece.getCollisionShape())) {
+                                if (player.testIntersection(piece.getCollisionShape())) {
+
+                                    //insert code for collision here
+                                    if (!Debug.isEnabled()) {
+                                        ((PlayerScreenObject) player).changeHealth(-5f);
+                                    }
+
+                                    piece.setCollision(false);
+                                    piece.setIsVisible(false);
+
+                                    //makes a particle system after a collision
+                                    BasicParticleSystem ps = new BasicParticleSystem(piece.getX() + piece.getWidth() / 2, piece.getY() + piece.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                                    ps.setDeltaX(piece.getDeltaX());
+                                    ps.setDeltaY(piece.getDeltaY());
+                                    ps.setInheritInertia(true);
+                                    ps.createParticles(60, 8, 3, 3, .75f, 0, .75f, true, explosionColors);
+                                    getObjectsList().get(SCREENOBJLAYER).add(ps);
+
+                                }
                             }
                         }
                     }
                 }
             }
+            
+            //SCREEN OBJ COLLISIONS, CHECK IN SWITCH W/ ID'S
+            
+            for (int i = 0; i < getObjectsList().get(SCREENOBJLAYER).size(); i++) {
+                AbstractScreenObject ob = getObjectsList().get(SCREENOBJLAYER).get(i);
+                if (ob.isCollision()) {
+                    if (player.testIntersection(ob.getCollisionShape())) {
+                        BasicParticleSystem ps;
+                        switch (ob.getIdNum()) {
+                            case AbstractEnemyScreenObject.BASICHEALTHPICKUPSCREENOBJECTID:
+                                ((PlayerScreenObject) player).changeHealth(25);
+                                getObjectsList().get(SCREENOBJLAYER).remove(i);
+                                i--;
+                                //makes a particle system after a collision
+                                ps = new BasicParticleSystem(ob.getX() + ob.getWidth() / 2, ob.getY() + ob.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                                ps.setDeltaX(ob.getDeltaX());
+                                ps.setDeltaY(ob.getDeltaY());
+                                ps.setInheritInertia(true);
+                                ps.createParticles(20, 8, 3, 3, .6f, 0, .75f, true, Color.GREEN);
+                                getObjectsList().get(SCREENOBJLAYER).add(ps);
+                                break;
+                            case AbstractScreenObject.BASICPOINTPICKUPSCREENOBJECTID:
+                                setScore(getScore() + 25);
+                                getObjectsList().get(SCREENOBJLAYER).remove(i);
+                                i--;
+                                //makes a particle system after a collision
+                                ps = new BasicParticleSystem(ob.getX() + ob.getWidth() / 2, ob.getY() + ob.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                                ps.setDeltaX(ob.getDeltaX());
+                                ps.setDeltaY(ob.getDeltaY());
+                                ps.setInheritInertia(true);
+                                ps.createParticles(20, 8, 3, 3, .6f, 0, .75f, true, Color.YELLOW);
+                                getObjectsList().get(SCREENOBJLAYER).add(ps);
+                                break;
+                                
+                        }
+                    }
+                }
+            }
+
+            //shooting bullets
+            if (((PlayerScreenObject) player).isShooting()) {
+                AbstractScreenObject bullet = new BasicPlayerBulletScreenObject((float) ((PlayerScreenObject) player).getMidIntersectPoint().getX(), (float) ((PlayerScreenObject) player).getMidIntersectPoint().getY(), 11, 11, true, true, ((PlayerScreenObject) player).getDegrees(), ((PlayerScreenObject) player).getPlayerColor(), (int) (((PlayerScreenObject) player).getxMovementMultiplier() * ((PlayerScreenObject) player).getDeltaX()), (int) (((PlayerScreenObject) player).getyMovementMultiplier() * ((PlayerScreenObject) player).getDeltaY()));
+                bullet.setIsVisible(true);
+                getObjectsList().get(SCREENOBJLAYER).add(bullet);
+                ((PlayerScreenObject) player).setShooting(false);
+            }
+
+            //END GAME CONDITION 
+            if (((PlayerScreenObject) player).getHealth() <= 0) {
+                setNextScreen('S');
+            }
         }
-        
-        //shooting bullets
-        if(((PlayerScreenObject)player).isShooting()){
-            AbstractScreenObject bullet = new BulletScreenObject((float)((PlayerScreenObject)player).getMidIntersectPoint().getX(), (float)((PlayerScreenObject)player).getMidIntersectPoint().getY(), 15, 15, true, true, ((PlayerScreenObject)player).getDegrees(), ((PlayerScreenObject)player).getPlayerColor(), (int)(((PlayerScreenObject)player).getxMovementMultiplier() * ((PlayerScreenObject)player).getDeltaX()), (int)(((PlayerScreenObject)player).getyMovementMultiplier() * ((PlayerScreenObject)player).getDeltaY()));
-            bullet.setIsVisible(true);
-            getObjectsList().get(SCREENOBJLAYER).add(bullet);
-            ((PlayerScreenObject)player).setShooting(false);
-        }
-        
-        //END GAME CONDITION 
-        if(((PlayerScreenObject)player).getHealth() <= 0){
-            setNextScreen('S');
+        //pause screen logic
+        else{
+            
         }
     }
 
@@ -259,7 +347,15 @@ public class PlayScreen extends AbstractScreen {
         
         //draws the player's health
         drawHealth(g);
+        
+        //pause screen graphics
+        if(isPaused()){
+            
+            g.setColor(Color.WHITE);
+         
+            drawCenteredString(g, "Paused", getWidth()/2, getHeight()/2, titleFont);
 
+        }
     }
 
     @Override
@@ -274,6 +370,17 @@ public class PlayScreen extends AbstractScreen {
             }
         }
         //cycle through input for the screen below here----------
+        //pressed key
+        for (int key : inputList) {
+            if (key == KeyEvent.VK_ESCAPE) {
+                delayInput(30);
+                setPaused(!isPaused());
+            }
+        }
+        //released key
+        for (int key : inputListReleased) {
+            
+        }
 
     }
 
@@ -572,6 +679,47 @@ public class PlayScreen extends AbstractScreen {
             }
             getObjectsList().get(BACKROUNDOBJLAYER).add(generateBakcroundObject());
 
+        }
+        
+        if ((int)(Math.random() * basicEnemySpawnRate) == 0) {
+            if (Debug.isEnabled()) {
+                System.out.println("Spawned Enemy!");
+            }
+            
+            int ranx = (int)(Math.random() * getScreenWidth());
+            int y = -50;
+            
+            AbstractScreenObject enemy = new BasicEnemyScreenObject(ranx, y, 10, 10, screenScrollSpeed, true, false);
+            getObjectsList().get(SCREENOBJLAYER).add(enemy);
+
+        }
+        
+        if(Math.random() <= healthPickupSpawnRate){
+            if (Debug.isEnabled()) {
+                System.out.println("Spawned HP Pickup!");
+            }
+            
+            int ranx = (int)(Math.random() * getScreenWidth());
+            int y = -50;
+            
+            BasicHealthPickupScreenObject pickup = new BasicHealthPickupScreenObject(ranx, y, 26, 26);
+            pickup.setDeltaY(screenScrollSpeed);
+            getObjectsList().get(SCREENOBJLAYER).add(pickup);
+            
+        }
+        
+        if(Math.random() <= pointPickupSpawnRate){
+            if (Debug.isEnabled()) {
+                System.out.println("Spawned Point Pickup!");
+            }
+            
+            int ranx = (int)(Math.random() * getScreenWidth());
+            int y = -50;
+            
+            BasicPointPickupScreenObject pickup = new BasicPointPickupScreenObject(ranx, y, 26, 26);
+            pickup.setDeltaY(screenScrollSpeed);
+            getObjectsList().get(SCREENOBJLAYER).add(pickup);
+            
         }
 
     }

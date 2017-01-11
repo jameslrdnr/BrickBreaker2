@@ -29,13 +29,14 @@ public class Debug extends AbstractScreenObject{
     private static boolean enabled = false;
     
     public Debug(){
-        super();
+        super(40, 40, 0, 0, DEBUGID, false, true);
         
         init();
     }
     
     public Debug(KeyListener ks){
-        super();
+        super(40, 40, 0, 0, DEBUGID, false, true);
+
         
         keyListener = ks;
         
@@ -44,10 +45,6 @@ public class Debug extends AbstractScreenObject{
     
     public void init(){
         
-        setX(40);
-        setY(40);
-        
-        setAcceptingInput(true);
         setInputDelay(10);
     }
 

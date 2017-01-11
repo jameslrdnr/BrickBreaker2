@@ -9,6 +9,7 @@ import static brickbreaker.BrickBreakerMain.getDebug;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.util.ArrayList;
 
 /**
@@ -17,9 +18,12 @@ import java.util.ArrayList;
  */
 public class BasicBrickObject extends AbstractScreenObject{
     
+    private boolean blinking;
+    private int blinkTime, blinkTimer;
+    
     public BasicBrickObject(float x, float y, int width, int height){
         
-        super(x, y, width, height, (short)0, true, true);
+        super(x, y, width, height, BASICBRICKOBJECTID, true, true);
         
         init();
         
@@ -29,6 +33,8 @@ public class BasicBrickObject extends AbstractScreenObject{
         
         setCollision(false);
         setIsVisible(false);
+        
+        blinkTime = 0;
         
         //set movement mulitpliers to equal width and height
         setxMovementMultiplier(10);
@@ -56,6 +62,15 @@ public class BasicBrickObject extends AbstractScreenObject{
     @Override
     public void runLogic() {
         
+        if(blinking){
+            if(blinkTime > blinkTimer){
+                setIsVisible(!getIsVisible());
+                blinkTime -= blinkTimer;
+            }else{
+                blinkTime++;
+            }
+        }
+        
     }
 
     @Override
@@ -68,7 +83,7 @@ public class BasicBrickObject extends AbstractScreenObject{
         g.setColor(getColor());
         g.fillRect((int) getX(), (int) getY(), getWidth(), getHeight());
         g.setColor(Color.BLACK);
-        g.drawRoundRect((int) getX(), (int) getY(), getWidth(), getHeight(), 1, 1);
+        g.drawRect((int) getX(), (int) getY(), getWidth(), getHeight());
         
         
         }
@@ -76,14 +91,41 @@ public class BasicBrickObject extends AbstractScreenObject{
         if (getDebug().isEnabled()) {
             if (isCollision()) {
                 g.setColor(Color.GREEN);
-            } else {
-                g.setColor(Color.RED);
-            }
-
-            g.draw(getCollisionShape());
+                g.draw(getCollisionShape());
+            } 
+//            else {
+//                g.setColor(Color.RED);
+//            }
+//            g.draw(getCollisionShape());
         }
         
         g.setColor(tempC);
     }
+
+    public boolean isBlinking() {
+        return blinking;
+    }
+
+    public void setBlinking(boolean blinking) {
+        this.blinking = blinking;
+    }
+
+    public int getBlinkTime() {
+        return blinkTime;
+    }
+
+    public void setBlinkTime(int blinkTime) {
+        this.blinkTime = blinkTime;
+    }
+
+    public int getBlinkTimer() {
+        return blinkTimer;
+    }
+
+    public void setBlinkTimer(int blinkTimer) {
+        this.blinkTimer = blinkTimer;
+    }
+    
+    
     
 }

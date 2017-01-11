@@ -29,7 +29,7 @@ public class PlayerScreenObject extends AbstractScreenObject {
     private final double colorTransitionSpeed = Double.parseDouble(BrickBreakerMain.getOptions().getProperty("colorTransitionSpeed"));
 
     //how long each color should be displayed
-    private final double shootTime = 0.1;
+    private final double shootTime = 0.05;
     
 //used for timers
     private final int framesPerSecond = 60;
@@ -40,6 +40,8 @@ public class PlayerScreenObject extends AbstractScreenObject {
 
     //variables
     //------------------------------------------------------------------
+    
+    int rFade, gFade, bFade, fadeStep, fadeRate;
     
     //sets movement multiplier
     private int speed;
@@ -53,6 +55,9 @@ public class PlayerScreenObject extends AbstractScreenObject {
 
     //cycling through rainbow colors
     private boolean isPlayerColorCycle;
+    
+    //cycling through all coors w/ fade effect
+    private boolean isPlayerColorFade;
 
     //which color is currently selected from rainbowColors
     private int currentColorIndex;
@@ -90,17 +95,9 @@ public class PlayerScreenObject extends AbstractScreenObject {
     private boolean shooting;
 
     
-        
-
-   
-    public PlayerScreenObject() {
-        super();
-
-        init();
-    }
-
+       
     public PlayerScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput) {
-        super(xTemp, yTemp, widthTemp, heightTemp, (short) 0, collisionTemp, acceptingInput);
+        super(xTemp, yTemp, widthTemp, heightTemp, PLAYERSCREENOBJECTID, collisionTemp, acceptingInput);
 
         init();
     }
@@ -116,6 +113,7 @@ public class PlayerScreenObject extends AbstractScreenObject {
         //set to default
         isPlayerColorCycle = false;
         isPlayerColorRandom = false;
+        isPlayerColorFade = false;
         colorTimer = colorTransitionSpeed;
         shootTimer = shootTime;
         health = maxHealth;
@@ -137,7 +135,17 @@ public class PlayerScreenObject extends AbstractScreenObject {
         else if (colorText.equals("rainbowCycle")) {
             isPlayerColorCycle = true;
             playerColor = rainbowColors[0];
-        } //all other cases should be a real color
+        }
+        else if(colorText.equals("rainbowFade")){
+            isPlayerColorFade = true;
+            rFade = -1;
+            gFade = 1;
+            bFade = 0;
+            fadeStep = 1;
+            fadeRate = 5;
+            playerColor = new Color(255, 0, 0);
+        }
+        //all other cases should be a real color
         else {
             try {
                 Field field = Class.forName("java.awt.Color").getField(colorText.toLowerCase()); // toLowerCase because the color fields are RED or red, not Red
@@ -168,6 +176,16 @@ public class PlayerScreenObject extends AbstractScreenObject {
         setCollisionShape(getMyShape());
         
         radius = midIntersectPoint.distance(bottomLPoint);
+        
+        BasicParticleSystem ps = new BasicParticleSystem((float)midIntersectPoint.getX(), (float)midIntersectPoint.getY(), 2, 2, 0, .6f, .6, 4);
+        ps.setParticleFade(true);
+        ps.setIsVisible(true);
+        ps.setPermanent(true);
+        ps.setColor(playerColor);
+        //screen scroll speed
+        ps.setDeltaYModifier(2f);
+        setParticleSys(ps);
+
     }
 
     @Override
@@ -181,6 +199,10 @@ public class PlayerScreenObject extends AbstractScreenObject {
         setCollisionShape(getMyShape());
         currentDegreesRotated = degrees;
         
+        getParticleSys().setX((float)midIntersectPoint.getX());
+        getParticleSys().setY((float)midIntersectPoint.getY());
+        getParticleSys().move();
+        
        }
     
     
@@ -188,15 +210,17 @@ public class PlayerScreenObject extends AbstractScreenObject {
     public void handleInput(String inputMethod, ArrayList<Integer> inputList, String inputMethodRemove, ArrayList<Integer> inputListReleased) {
 
         if (getAcceptingInput()) {
-            for (Integer keyPressed : inputListReleased) {
+            for (Integer keyPressed : inputList) {
                 switch (inputMethod) {
                     case "default": {
-                        //for(int keyPressed : )
                         if (keyPressed == KeyEvent.VK_LEFT || keyPressed == KeyEvent.VK_A) {
 
                             //not against the wall    
                             if (midIntersectPoint.getX() - radius > 0) {
                                 setDeltaX(-1);
+                            }
+                            else{
+                                setDeltaX(0);
                             }
 
                         } else if (keyPressed == KeyEvent.VK_RIGHT || keyPressed == KeyEvent.VK_D) {
@@ -204,11 +228,17 @@ public class PlayerScreenObject extends AbstractScreenObject {
                             if (midIntersectPoint.getX() + radius < BrickBreakerMain.SCREENWIDTH) {
                                 setDeltaX(1);
                             }
+                            else{
+                                setDeltaX(0);
+                            }
 
                         } else if (keyPressed == KeyEvent.VK_UP || keyPressed == KeyEvent.VK_W) {
 
                             if (midIntersectPoint.getY() - radius > 0) {
                                 setDeltaY(-1);
+                            }
+                            else{
+                                setDeltaY(0);
                             }
 
                         } else if (keyPressed == KeyEvent.VK_DOWN || keyPressed == KeyEvent.VK_S) {
@@ -216,10 +246,35 @@ public class PlayerScreenObject extends AbstractScreenObject {
                             if (midIntersectPoint.getY() + radius < BrickBreakerMain.SCREENHEIGHT) {
                                 setDeltaY(1);
                             }
+                            else{
+                                setDeltaY(0);
+                            }
+                            
                         } else if (keyPressed == KeyEvent.VK_SPACE && shootTimer >= shootTime) {
                             shooting = true;
                             shootTimer = 0;
                         }
+                    }
+                }
+            }
+            
+            
+            for (Integer keyReleased : inputListReleased) {
+                switch (inputMethod) {
+                    case "default": {
+                        //for(int keyPressed : )
+                        if (keyReleased == KeyEvent.VK_LEFT || keyReleased == KeyEvent.VK_A) {
+                            setDeltaX(0);
+
+                        } else if (keyReleased == KeyEvent.VK_RIGHT || keyReleased == KeyEvent.VK_D) {
+                            setDeltaX(0);
+
+                        } else if (keyReleased == KeyEvent.VK_UP || keyReleased == KeyEvent.VK_W) {
+                            setDeltaY(0);
+
+                        } else if (keyReleased == KeyEvent.VK_DOWN || keyReleased == KeyEvent.VK_S) {
+                            setDeltaY(0);
+                        } 
                     }
                 }
             }
@@ -228,18 +283,22 @@ public class PlayerScreenObject extends AbstractScreenObject {
 
     @Override
     public void runLogic() {
-//        setDeltaX(0);
-//        setDeltaY(0);
 
         handleDegrees();
 
         //add to the timer if it is being used
-        if (isPlayerColorCycle || isPlayerColorRandom) {
+        if (isPlayerColorCycle || isPlayerColorRandom || isPlayerColorFade) {
             colorTimer += 1.0 / framesPerSecond;
         }
 
         shootTimer += 1.0 / framesPerSecond;
 
+        getParticleSys().runLogic();
+        getParticleSys().setColor(playerColor);
+        
+        if(health > maxHealth)
+            health = maxHealth;
+        
     }
 
     public void handleDegrees() {
@@ -275,8 +334,24 @@ public class PlayerScreenObject extends AbstractScreenObject {
         //Set initial values
         //------------------------------------------------------------------
         Color gameColor = g.getColor();
-
-        if (colorTimer >= colorTransitionSpeed && (isPlayerColorCycle || isPlayerColorRandom)) {
+        if (isPlayerColorFade) {
+            if (playerColor.getRed() >= 255) {
+                rFade = -1;
+                gFade = 1;
+                bFade = 0;
+            } else if (playerColor.getGreen() >= 255) {
+                rFade = 0;
+                gFade = -1;
+                bFade = 1;
+            } else if (playerColor.getBlue() >= 255) {
+                rFade = 1;
+                gFade = 0;
+                bFade = -1;
+            }
+            //debug
+            //System.out.println((playerColor.getRed() + fadeRate * rFade) + " : " + (playerColor.getGreen() + fadeRate * gFade) + " : " + (playerColor.getBlue() + fadeRate * bFade));
+            playerColor = new Color(playerColor.getRed() + fadeRate * rFade, playerColor.getGreen() + fadeRate * gFade, playerColor.getBlue() + fadeRate * bFade);
+        } else if (colorTimer >= colorTransitionSpeed && (isPlayerColorCycle || isPlayerColorRandom)) {
             if (isPlayerColorRandom) {
                 currentColorIndex = (int) (Math.random() * rainbowColors.length);
                 playerColor = rainbowColors[currentColorIndex];
@@ -307,7 +382,11 @@ public class PlayerScreenObject extends AbstractScreenObject {
             
             //draw the walls
             g.setColor(Color.WHITE);
+            g.drawOval((int)midIntersectPoint.getX(),(int) midIntersectPoint.getY(), 3, 3);
         }
+        
+        getParticleSys().drawObject(g);
+        
         //Reset variables to initials
         //------------------------------------------------------------------
         g.setColor(gameColor);

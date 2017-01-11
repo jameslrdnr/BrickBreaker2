@@ -28,7 +28,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     private boolean delayAllInput;
     private int mouseX, mouseY;
     private BufferedImage back;
-    private boolean enableMasterDebug;
+    private boolean enableMasterDebug, paused = false;
     private char nextScreen;
     //adds debug object
     private Debug debug = new Debug(this);
@@ -211,11 +211,9 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     public ArrayList<Integer> handleInput(ArrayList<Integer> inputList) {
         //adds all the new input keys to the list of currently pressed keys
-        if (delayAllInput == false) {
-            for (int ob : getDumpList()) {
-                if (inputList.contains(ob) == false) {
-                    inputList.add(ob);
-                }
+        for (int ob : getDumpList()) {
+            if (inputList.contains(ob) == false) {
+                inputList.add(ob);
             }
         }
         //removes all keys that have been released
@@ -229,6 +227,11 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
                 }
             }
         }
+
+        if (delayAllInput) {
+            inputList.clear();
+        }
+
         //resets dump and remove lists
         //gives the current input to the specific input method
         specificInput(inputList, getRemoveList());
@@ -398,6 +401,20 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     public void setInputMethodRemove(String inputMethodRemove) {
         this.inputMethodRemove = inputMethodRemove;
     }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
     
+    public int getScreenWidth(){
+        return getWidth();
+    }
     
+    public int getScreenHeight(){
+        return getHeight();
+    }
 }

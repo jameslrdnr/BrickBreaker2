@@ -8,7 +8,6 @@ package screenObjects;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Shape;
 import java.util.ArrayList;
 
 /**
@@ -19,7 +18,7 @@ public class BasicParticle extends AbstractScreenObject {
     
     private Polygon shape;
     private boolean fade;
-    private float fadeAmount;
+    private int fadeAmount;
     int[] xVals;
     int[] yVals;
     float cumulativeDX, cumulativeDY;
@@ -27,7 +26,7 @@ public class BasicParticle extends AbstractScreenObject {
     private float lifeTime, timeAlive;
     
     public BasicParticle(float tX, float tY, int w, int h, float maxLife, Color color){
-        super(tX, tY, w, h, (short) 0, false, false);
+        super(tX, tY, w, h, BASICPARTICLEID, false, false);
         setColor(color);
         lifeTime = maxLife;
         init();
@@ -96,8 +95,9 @@ public class BasicParticle extends AbstractScreenObject {
         timeAlive += 1.0/60.0;
         
         if(fade){
-            fadeAmount = 255 - (((float)timeAlive)/lifeTime) * 255;
-            setColor(new Color(getColor().getRed(), getColor().getGreen(), getColor().getBlue(), fadeAmount));
+            fadeAmount = 255 - (int)(((((float)timeAlive)/lifeTime) * (((float)timeAlive)/lifeTime)) * 255);
+            if(fadeAmount >= 0)
+                setColor(new Color(getColor().getRed(), getColor().getGreen(), getColor().getBlue(), fadeAmount));
         }
         
         cumulativeDX += getDeltaX();
