@@ -22,6 +22,7 @@ public class BasicParticle extends AbstractScreenObject {
     int[] xVals;
     int[] yVals;
     float cumulativeDX, cumulativeDY;
+    float deltaXModifier, deltaYModifier;
     
     private float lifeTime, timeAlive;
     
@@ -64,23 +65,21 @@ public class BasicParticle extends AbstractScreenObject {
     @Override
     public void move() {
         
-        moveY(getDeltaY());
-        moveX(getDeltaX());
+        cumulativeDX += ((getDeltaX() * getSpeed()) + deltaXModifier);
+        cumulativeDY += ((getDeltaY() * getSpeed()) + deltaYModifier);
+        
+        moveY((getDeltaY() * getSpeed()) + deltaYModifier);
+        moveX((getDeltaX() * getSpeed()) + deltaXModifier);
         
         if(cumulativeDX >= 1 || cumulativeDX <= -1){
             shape.translate((int)cumulativeDX, 0);
-            if(getDeltaX() > 0)
-                cumulativeDX -= (int)cumulativeDX;
-            else
-                cumulativeDX -= (int)cumulativeDX;
+            cumulativeDX -= (int)cumulativeDX;
         }
         if(cumulativeDY >= 1 || cumulativeDY <= -1){
             shape.translate(0, (int)cumulativeDY);
-            if(getDeltaY() > 0)
-                cumulativeDY -= (int)cumulativeDY;
-            else
-                cumulativeDY -= (int)cumulativeDY;
+            cumulativeDY -= (int)cumulativeDY;
         }
+        
         
     }
 
@@ -99,10 +98,6 @@ public class BasicParticle extends AbstractScreenObject {
             if(fadeAmount >= 0)
                 setColor(new Color(getColor().getRed(), getColor().getGreen(), getColor().getBlue(), fadeAmount));
         }
-        
-        cumulativeDX += getDeltaX();
-        cumulativeDY += getDeltaY();
-        
     }
 
     @Override
@@ -140,6 +135,22 @@ public class BasicParticle extends AbstractScreenObject {
 
     public void setShape(Polygon shape) {
         this.shape = shape;
+    }
+
+    public float getDeltaXModifier() {
+        return deltaXModifier;
+    }
+
+    public void setDeltaXModifier(float deltaXModifier) {
+        this.deltaXModifier = deltaXModifier;
+    }
+
+    public float getDeltaYModifier() {
+        return deltaYModifier;
+    }
+
+    public void setDeltaYModifier(float deltaYModifier) {
+        this.deltaYModifier = deltaYModifier;
     }
     
     

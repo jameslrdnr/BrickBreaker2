@@ -9,7 +9,6 @@ import static brickbreaker.BrickBreakerMain.getDebug;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.util.ArrayList;
 
 /**
@@ -47,8 +46,8 @@ public class BasicBrickObject extends AbstractScreenObject{
     @Override
     public void move() {
         
-        moveX(getDeltaX());
-        moveY(getDeltaY());
+        moveX(getDeltaX() * getSpeed());
+        moveY(getDeltaY() * getSpeed());
         
         ((Rectangle)getCollisionShape()).setLocation((int)getX(), (int)getY());
         

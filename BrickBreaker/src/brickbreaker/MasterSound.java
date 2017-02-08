@@ -14,14 +14,29 @@ import java.util.ArrayList;
  */
 public class MasterSound {
     private Noise bgSong;
+    private String volume;
+    private int lvl;
 //    private String volume=options.getProperty("volume");
     //private int lvl = Integer.getInteger(volume);
     //int soundEffectNum=0;
-    private float vol = (float)((5-5)*-4)+25;
+    private float vol;
     
     ArrayList<Noise> sounds = new ArrayList<>();
     //sounds.add(bgSong);
     public MasterSound(){
+        volume=options.getProperty("volume");
+        lvl = Integer.parseInt(volume);
+        System.out.println(lvl);
+        if(lvl==0){
+            vol= -80.0f;
+        }
+        else if(lvl==1||lvl==2||lvl==3||lvl==4||lvl==5){
+            vol= (float)((((lvl)*-1)+4)*-6);
+        }
+        else{
+            vol = 0f;
+        }
+        
         
     }
     /*public void setBgMusic(String filename){

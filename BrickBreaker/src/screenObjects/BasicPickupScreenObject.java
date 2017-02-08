@@ -21,12 +21,12 @@ public class BasicPickupScreenObject extends AbstractScreenObject{
 
     @Override
     public void move() {
-        moveX(getDeltaX());
-        moveY(getDeltaY());
+        moveX(getDeltaX() * getSpeed());
+        moveY(getDeltaY() * getSpeed());
         if(getParticleSys() != null){
-            getParticleSys().setDeltaX(getDeltaX());
-            getParticleSys().setDeltaY(getDeltaY());
-            getParticleSys().move();
+            getParticleSys().setDegrees(getDegrees());
+            getParticleSys().setSpeed(getSpeed());
+            getParticleSys().movementHandler();
         }
         
         if(getCollisionShape() != null)

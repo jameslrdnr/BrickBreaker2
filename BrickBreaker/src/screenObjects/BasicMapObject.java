@@ -67,8 +67,8 @@ public class BasicMapObject extends AbstractScreenObject {
                     mapPanel[x][y] = new BasicBrickObject(x * 10, getY() + y * 10, 10, 10);
                     mapPanel[x][y].setIsVisible(false);
                     mapPanel[x][y].setCollision(false);
-                    mapPanel[x][y].setDeltaX(getDeltaX());
-                    mapPanel[x][y].setDeltaY(getDeltaY());
+                    mapPanel[x][y].setDegrees(getDegrees());
+                    mapPanel[x][y].setSpeed(getSpeed());
                     mapPanel[x][y].setColor(getColor());
                 }
             }
@@ -81,14 +81,14 @@ public class BasicMapObject extends AbstractScreenObject {
         
         for(BasicBrickObject[] slice : mapPanel){
             for(BasicBrickObject piece : slice){
-                piece.setDeltaY(getDeltaY());
-                piece.setDeltaX(getDeltaX());
-                piece.move();
+                piece.setDegrees(getDegrees());
+                piece.setSpeed(getSpeed());
+                piece.movementHandler();
             }
         }
         
-        moveX(getDeltaX());
-        moveY(getDeltaY());
+        moveX(getDeltaX() * getSpeed());
+        moveY(getDeltaY() * getSpeed());
         
         
     }
@@ -134,8 +134,8 @@ public class BasicMapObject extends AbstractScreenObject {
                 BasicBrickObject obj = mapPanel[x][y];
                 obj.setX(getX() + x * 10);
                 obj.setY(getY() + y * 10);
-                obj.setDeltaX(getDeltaX());
-                obj.setDeltaY(getDeltaY());
+                obj.setDegrees(getDegrees());
+                obj.setSpeed(getSpeed());
             }
         }
     }
@@ -214,11 +214,6 @@ public class BasicMapObject extends AbstractScreenObject {
 
     public void setCubeSpawnRate(float cubeSpawnRate) {
         this.cubeSpawnRate = cubeSpawnRate;
-    }
-
-    @Override
-    public void moveY(float dY){
-        setY(getY() + dY);
     }
 
     public short getChunkNum() {

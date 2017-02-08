@@ -66,11 +66,11 @@ public class BasicParticleSystem extends AbstractScreenObject {
     @Override
     public void move() {
         
-        moveX(getDeltaX());
-        moveY(getDeltaY());
+        moveX(getDeltaX() * getSpeed());
+        moveY(getDeltaY() * getSpeed());
         
         for(BasicParticle part : particles){
-            part.move();
+            part.movementHandler();
         }
         
     }
@@ -113,9 +113,9 @@ public class BasicParticleSystem extends AbstractScreenObject {
     @Override
     public void drawObject(Graphics2D g) {
         
-        for(BasicParticle piece : particles){
-            if(piece.getIsVisible())
-                piece.drawObject(g);
+        for(int i = 0; i < particles.size(); i++){
+            if(particles.get(i).getIsVisible())
+                particles.get(i).drawObject(g);
         }
         
         if(Debug.isEnabled()){
@@ -129,17 +129,11 @@ public class BasicParticleSystem extends AbstractScreenObject {
     
     public void spawnParticle(){
         
-        float spawnX = getX(), spawnY = getY(), tempDX = minParticleSpeed, tempDY = minParticleSpeed;
+        float spawnX = getX(), spawnY = getY(), tempSpeed = minParticleSpeed, tempDeg = 0;
         
-        tempDX += (float) (Math.random() * particleSpeedVariance);
-        tempDY += (float) (Math.random() * particleSpeedVariance);
+        tempSpeed += (float) (Math.random() * particleSpeedVariance);
         
-        if(Math.random() > .5){
-            tempDX = tempDX * -1;
-        }
-        if(Math.random() > .5){
-            tempDY = tempDY * -1;
-        }
+        tempDeg += (float)(Math.random() * 360);
         
         if(spawnRadius != 0){
             spawnX += ((Math.random() * spawnRadius) - (Math.random() * spawnRadius));
@@ -148,15 +142,13 @@ public class BasicParticleSystem extends AbstractScreenObject {
         
         BasicParticle part = new BasicParticle(spawnX, spawnY, particleWidth, particleHeight, particleLifeTime, getColor());
         part.setIsVisible(getIsVisible());
+        part.setSpeed(tempSpeed);
+        part.setDegrees(tempDeg);
         
         if(inheritInertia){
-            tempDX += getDeltaX();
-            tempDY += getDeltaY();
+            part.setDeltaXModifier(getDeltaXModifier());
+            part.setDeltaYModifier(getDeltaYModifier());
         }
-        tempDX += deltaXModifier;
-        tempDY += deltaYModifier;
-        part.setDeltaX(tempDX);
-        part.setDeltaY(tempDY);
         
         part.setFade(particleFade);
         
@@ -168,32 +160,26 @@ public class BasicParticleSystem extends AbstractScreenObject {
 
         for (int i = 0; i < particleNumber; i++) {
 
-            float spawnX = getX(), spawnY = getY(), tempDX = minSpeed, tempDY = minSpeed;
+            float spawnX = getX(), spawnY = getY(), tempSpeed = minSpeed, tempDeg = 0;
+            
+            tempSpeed += (float)(Math.random() * speedVariance);
 
             spawnX += ((Math.random() * radius) - (Math.random() * radius));
             spawnY += ((Math.random() * radius) - (Math.random() * radius));
 
-            tempDX += (float) (Math.random() * speedVariance);
-            tempDY += (float) (Math.random() * speedVariance);
-
-            if (Math.random() > .5) {
-                tempDX = tempDX * -1;
-            }
-            if (Math.random() > .5) {
-                tempDY = tempDY * -1;
-            }
-
-            if (inheritInertia) {
-                tempDX += getDeltaX();
-                tempDY += getDeltaY();
-            }
+            tempDeg = (float)(Math.random() * 360);
 
             BasicParticle part = new BasicParticle(spawnX, spawnY, width, height, lifeTime, color);
-            part.setDeltaX(tempDX);
-            part.setDeltaY(tempDY);
+
+            part.setDegrees(tempDeg);
+            part.setSpeed(tempSpeed);
             part.setIsVisible(true);
             part.setFade(fade);
 
+            if (inheritInertia) {
+                part.setDeltaXModifier(getDeltaXModifier());
+                part.setDeltaYModifier(getDeltaYModifier());
+            }
             particles.add(part);
 
         }

@@ -48,7 +48,7 @@ public class PlayScreen extends AbstractScreen {
     
     //########################
     //map generation variables
-    private final int chunkWidth = 80, chunkHeight = 40, numChunks = 5, screenWidth, screenHeight;
+    private final int chunkWidth = 80, chunkHeight = 40, numChunks = 5, screenWidth, screenHeight, LEFT = 180, RIGHT = 0, UP = 90, DOWN = 270;
     private float cubeSpawnRate;
     private float screenScrollSpeed;
     private String currentChunkGenType;
@@ -56,8 +56,11 @@ public class PlayScreen extends AbstractScreen {
 
     private int BackroundMinDimension = 10;
     private int backroundMaxDimensionDeviation = 6;
+    
+    public static final int minBasicEnemySide = 10;
+    public static final int basicEnemyMaxSideDeviation = 20;
 
-    private float backroundObjectMaxMovementSpeedDeviation = 1.5f;
+    private float backroundObjectMaxMovementSpeedDeviation = 2f;
     private float backroundObjectMinMovementSpeed = 1f;
     private float backroundObjectSpawnRate = .0015f;
     
@@ -67,7 +70,7 @@ public class PlayScreen extends AbstractScreen {
     private Properties IDlist;
     private String IDMapLoc = "src/assets/ObjectIDMap.properties";
     
-    private double basicEnemySpawnRate, healthPickupSpawnRate, pointPickupSpawnRate;
+    private double basicEnemySpawnRate, healthPickupSpawnRate, pointPickupSpawnRate, threeShotPickupSpawnRate;
     
     //other variables
     private Color[] explosionColors;
@@ -98,6 +101,7 @@ public class PlayScreen extends AbstractScreen {
         //adds player to screen objects
         player = new PlayerScreenObject(300, 300, 25, 25, true, true);
         player.setIsVisible(true);
+        player.setSpeed(0);
         getObjectsList().get(PLAYERLAYER).add(player);
 
         //attempts to load idnumbers
@@ -121,10 +125,11 @@ public class PlayScreen extends AbstractScreen {
         //create all the pieces themselves
         setCurrentChunkGenType("random");
 
-        cubeSpawnRate = .015f;
+        cubeSpawnRate = .01f;
         basicEnemySpawnRate = 100.0;
         healthPickupSpawnRate = .001;
-        pointPickupSpawnRate = .011;
+        pointPickupSpawnRate = .001;
+        threeShotPickupSpawnRate = .001;
         
         //spawn backround stars
 
@@ -179,7 +184,8 @@ public class PlayScreen extends AbstractScreen {
         for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
 
             getObjectsList().get(MAPLAYER).get(i).moveYMultiply(-chunkHeight * 2);
-            getObjectsList().get(MAPLAYER).get(i).setDeltaY(screenScrollSpeed);
+            getObjectsList().get(MAPLAYER).get(i).setDegrees(DOWN);
+            getObjectsList().get(MAPLAYER).get(i).setSpeed(screenScrollSpeed);
             ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).setCubeSpawnRate(cubeSpawnRate);
             ((BasicMapObject) getObjectsList().get(MAPLAYER).get(i)).generateRandomPlacementChunk();
 
@@ -203,15 +209,30 @@ public class PlayScreen extends AbstractScreen {
         //orange
         explosionColors[2] = new Color(234, 164, 42);
         
+        //debug particle system
+        
+//        BasicParticleSystem ps = new BasicParticleSystem(300, 400, 3, 3, 4, 4, 100, 0);
+//        ps.setParticleSpeedVariance(4);
+//        ps.setPermanent(true);
+//        
+//        getObjectsList().get(SCREENOBJLAYER).add(ps);
+        
+        BasicMissleScreenObject ms = new BasicMissleScreenObject(200, 100, 20, 5, player);
+        getObjectsList().get(SCREENOBJLAYER).add(ms);
+        
+        //TestCube ts = new TestCube(300, 400, 100, 10);
+        //getObjectsList().get(SCREENOBJLAYER).add(ts);
+        
     }
 
     @Override
     void runLogic() {
         
         //pass mouse input to debug
-        if (getDebug().isEnabled()) {
+        if (getDebug().isEnabled() && isPaused()) {
             getDebug().setMouseX(getMouseX());
             getDebug().setMouseY(getMouseY());
+            getDebug().runLogic();
         }
 
         //input
@@ -220,6 +241,11 @@ public class PlayScreen extends AbstractScreen {
 
         //all logic dependant on pausing
         if (!isPaused()) {
+            
+            if(getDebug().isEnabled()){
+                getDebug().setMouseX(getMouseX());
+                getDebug().setMouseY(getMouseY());
+            }
 
             removeObjectsManager();
 
@@ -248,7 +274,7 @@ public class PlayScreen extends AbstractScreen {
 
                                     //insert code for collision here
                                     if (!Debug.isEnabled()) {
-                                        ((PlayerScreenObject) player).changeHealth(-5f);
+                                        ((PlayerScreenObject) player).changeHealth(-10f);
                                     }
 
                                     piece.setCollision(false);
@@ -256,10 +282,11 @@ public class PlayScreen extends AbstractScreen {
 
                                     //makes a particle system after a collision
                                     BasicParticleSystem ps = new BasicParticleSystem(piece.getX() + piece.getWidth() / 2, piece.getY() + piece.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
-                                    ps.setDeltaX(piece.getDeltaX());
-                                    ps.setDeltaY(piece.getDeltaY());
+                                    ps.setDegrees(DOWN);
+                                    ps.setSpeed(screenScrollSpeed);
+                                    ps.setDeltaYModifier(screenScrollSpeed);
                                     ps.setInheritInertia(true);
-                                    ps.createParticles(60, 8, 3, 3, .75f, 0, .75f, true, explosionColors);
+                                    ps.createParticles(60, 8, 3, 3, .5f, 0, 1f, true, explosionColors);
                                     getObjectsList().get(SCREENOBJLAYER).add(ps);
 
                                 }
@@ -269,11 +296,101 @@ public class PlayScreen extends AbstractScreen {
                 }
             }
             
+            //Enemy bullets hitting player
+            for (int i = 0; i < getObjectsList().get(SCREENOBJLAYER).size(); i++) {
+                
+                if(getObjectsList().get(SCREENOBJLAYER).get(i) instanceof BasicEnemyBulletScreenObject){
+                    BasicEnemyBulletScreenObject bullet = (BasicEnemyBulletScreenObject) getObjectsList().get(SCREENOBJLAYER).get(i);
+                    if(bullet.testBoundingIntersection(player.getCollisionShape())){
+                        if(bullet.testIntersection(player.getCollisionShape())){
+                            ((PlayerScreenObject) player).changeHealth(-bullet.getDamage());
+                            bullet.setHasHit(true);
+                            BasicParticleSystem ps = new BasicParticleSystem(player.getX() + player.getWidth() / 2, player.getY() + player.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                            ps.setDegrees(DOWN);
+                            ps.setSpeed(screenScrollSpeed);
+                            ps.setDeltaYModifier(screenScrollSpeed);
+                            ps.setInheritInertia(true);
+                            ps.createParticles(60, 8, 3, 3, .5f, 0, 1f, true, explosionColors);
+                            getObjectsList().get(SCREENOBJLAYER).add(ps);
+                        }
+                    }
+                }
+            }
+            
+            //handle collision between player bullets and enemies
+            for (int i = 0; i < getObjectsList().get(SCREENOBJLAYER).size(); i++) {
+                if(getObjectsList().get(SCREENOBJLAYER).get(i).getIdNum() == 0){
+                    System.out.println(getObjectsList().get(SCREENOBJLAYER).get(i).getClass());
+                }
+                if(getObjectsList().get(SCREENOBJLAYER).get(i) instanceof AbstractEnemyScreenObject){
+                    AbstractEnemyScreenObject enemy = (AbstractEnemyScreenObject) getObjectsList().get(SCREENOBJLAYER).get(i);
+                    for (int j = 0; j < getObjectsList().get(SCREENOBJLAYER).size(); j++) {
+                        if(getObjectsList().get(SCREENOBJLAYER).get(j) instanceof BasicPlayerBulletScreenObject){
+                            BasicPlayerBulletScreenObject bullet = (BasicPlayerBulletScreenObject) getObjectsList().get(SCREENOBJLAYER).get(j);
+                            if (enemy.testBoundingIntersection(bullet.getCollisionShape())) {
+                                if (enemy.testIntersection(bullet.getCollisionShape())) {
+                                    enemy.changeHealth(-bullet.getDamage());
+                                    bullet.setHasHit(true);
+                                    //makes a particle system after a collision
+                                    BasicParticleSystem ps = new BasicParticleSystem(enemy.getX() + enemy.getWidth() / 2, enemy.getY() + enemy.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                                    ps.setInheritInertia(false);
+                                    ps.createParticles(60, 8, 3, 3, .5f, 0, 1f, true, explosionColors);
+                                    
+                                    getObjectsList().get(SCREENOBJLAYER).add(ps);
+                                }
+                            }
+                        }
+                    } 
+                }    
+            }        
+                    
+//                }
+            
+
+            //player shooting
+            if (((PlayerScreenObject) player).isShooting()) {
+                PlayerScreenObject playerObj = (PlayerScreenObject) player;
+                AbstractScreenObject bullet = new BasicPlayerBulletScreenObject((float) playerObj.getMidIntersectPoint().getX(), (float) playerObj.getMidIntersectPoint().getY(), 11, 11, true, true, playerObj.getDegrees(), playerObj.getPlayerColor());
+                bullet.setIsVisible(true);
+                getObjectsList().get(SCREENOBJLAYER).add(bullet);
+                if(((PlayerScreenObject) player).getThreeShot()&&((PlayerScreenObject) player).getPowerUpAmmo()>0){
+                    AbstractScreenObject bullet1 = new BasicPlayerBulletScreenObject((float) playerObj.getMidIntersectPoint().getX(), (float) playerObj.getMidIntersectPoint().getY(), 11, 11, true, true, playerObj.getDegrees()+20, playerObj.getPlayerColor());
+                    AbstractScreenObject bullet2 = new BasicPlayerBulletScreenObject((float) playerObj.getMidIntersectPoint().getX(), (float) playerObj.getMidIntersectPoint().getY(), 11, 11, true, true, playerObj.getDegrees()-20, playerObj.getPlayerColor());
+                    //AbstractScreenObject bullet3 = new BasicPlayerBulletScreenObject();
+                    //bullet1.setDegrees(bullet.getDegrees()-100);
+                    bullet1.setIsVisible(true);
+                    getObjectsList().get(SCREENOBJLAYER).add(bullet1);
+                    //bullet2.setDegrees(bullet.getDegrees()-80);
+                    bullet2.setIsVisible(true);
+                    getObjectsList().get(SCREENOBJLAYER).add(bullet2);
+                    ((PlayerScreenObject) player).setPowerUpAmmo(((PlayerScreenObject) player).getPowerUpAmmo()-1);
+                    if(((PlayerScreenObject) player).getPowerUpAmmo()==0){
+                        ((PlayerScreenObject) player).setThreeShot(false);
+                    }
+                    
+                }
+                ((PlayerScreenObject) player).setShooting(false);
+            }
+            
+            //enemy shooting
+            for(int i = 0; i < getObjectsList().get(SCREENOBJLAYER).size(); i++){
+                if(getObjectsList().get(SCREENOBJLAYER).get(i) instanceof BasicEnemyScreenObject){
+                    BasicEnemyScreenObject enemy  = (BasicEnemyScreenObject)getObjectsList().get(SCREENOBJLAYER).get(i);
+                    if (enemy.isShooting()) {
+                        AbstractScreenObject bullet = new BasicEnemyBulletScreenObject((float) enemy.getMyShape().getBounds().getCenterX(), (float) enemy.getMyShape().getBounds().getCenterY(), 11, 11, true, false, enemy.getSpeed(), (PlayerScreenObject)player);
+                        bullet.setIsVisible(true);
+                        getObjectsList().get(SCREENOBJLAYER).add(bullet);
+                        enemy.setShooting(false);
+                    }
+                }
+            }
+            
             //SCREEN OBJ COLLISIONS, CHECK IN SWITCH W/ ID'S
             
             for (int i = 0; i < getObjectsList().get(SCREENOBJLAYER).size(); i++) {
                 AbstractScreenObject ob = getObjectsList().get(SCREENOBJLAYER).get(i);
                 if (ob.isCollision()) {
+                    //checks for collision w/ the player
                     if (player.testIntersection(ob.getCollisionShape())) {
                         BasicParticleSystem ps;
                         switch (ob.getIdNum()) {
@@ -283,38 +400,63 @@ public class PlayScreen extends AbstractScreen {
                                 i--;
                                 //makes a particle system after a collision
                                 ps = new BasicParticleSystem(ob.getX() + ob.getWidth() / 2, ob.getY() + ob.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
-                                ps.setDeltaX(ob.getDeltaX());
-                                ps.setDeltaY(ob.getDeltaY());
+                                ps.setDegrees(DOWN);
+                                ps.setSpeed(screenScrollSpeed);
+                                ps.setDeltaYModifier(screenScrollSpeed);
                                 ps.setInheritInertia(true);
                                 ps.createParticles(20, 8, 3, 3, .6f, 0, .75f, true, Color.GREEN);
                                 getObjectsList().get(SCREENOBJLAYER).add(ps);
                                 break;
                             case AbstractScreenObject.BASICPOINTPICKUPSCREENOBJECTID:
-                                setScore(getScore() + 25);
+                                setScore(getScore() + 5);
                                 getObjectsList().get(SCREENOBJLAYER).remove(i);
                                 i--;
                                 //makes a particle system after a collision
                                 ps = new BasicParticleSystem(ob.getX() + ob.getWidth() / 2, ob.getY() + ob.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
-                                ps.setDeltaX(ob.getDeltaX());
-                                ps.setDeltaY(ob.getDeltaY());
+                                ps.setDegrees(DOWN);
+                                ps.setSpeed(screenScrollSpeed);
+                                ps.setDeltaYModifier(screenScrollSpeed);
                                 ps.setInheritInertia(true);
                                 ps.createParticles(20, 8, 3, 3, .6f, 0, .75f, true, Color.YELLOW);
+                                getObjectsList().get(SCREENOBJLAYER).add(ps);
+                                break;
+                            case AbstractScreenObject.BASICTHREESHOTPICKUPSCREENOBJECTID:
+                                ((PlayerScreenObject) player).setPowerUpAmmo(25);
+                                ((PlayerScreenObject) player).setThreeShot(true);
+                                getObjectsList().get(SCREENOBJLAYER).remove(i);
+                                i--;
+                                //makes a particle system after a collision
+                                ps = new BasicParticleSystem(ob.getX() + ob.getWidth() / 2, ob.getY() + ob.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                                ps.setDegrees(DOWN);
+                                ps.setSpeed(screenScrollSpeed);
+                                ps.setDeltaYModifier(screenScrollSpeed);
+                                ps.setInheritInertia(true);
+                                ps.createParticles(20, 8, 3, 3, .6f, 0, .75f, true, Color.CYAN);
                                 getObjectsList().get(SCREENOBJLAYER).add(ps);
                                 break;
                                 
                         }
                     }
+                    
+                    
+                    //checking other screen obj collisions
+                    if (ob.getIdNum() == AbstractScreenObject.BASICMISSILESCREENOBJECTID) {
+                        if (ob.testIntersection(((BasicMissleScreenObject) ob).getTarget().getCollisionShape())) {
+                            ((PlayerScreenObject) player).changeHealth(-25);
+                            ((BasicMissleScreenObject) ob).setLifeTime(0);
+                            BasicParticleSystem ps = new BasicParticleSystem(ob.getX() + ob.getWidth() / 2, ob.getY() + ob.getHeight() / 2, 3, 3, 6f, 0f, 0, 0);
+                            ps.setDegrees(DOWN);
+                            ps.setSpeed(screenScrollSpeed);
+                            ps.setDeltaYModifier(ob.getDeltaY() * ob.getSpeed()/2f);
+                            ps.setDeltaXModifier(ob.getDeltaX() * ob.getSpeed()/2f);
+                            ps.setInheritInertia(true);
+                            ps.createParticles(75, 20, 4, 5, 1f, 0, 1.5f, true, explosionColors);
+                            getObjectsList().get(SCREENOBJLAYER).add(ps);
+                        }
+                    }
                 }
             }
-
-            //shooting bullets
-            if (((PlayerScreenObject) player).isShooting()) {
-                AbstractScreenObject bullet = new BasicPlayerBulletScreenObject((float) ((PlayerScreenObject) player).getMidIntersectPoint().getX(), (float) ((PlayerScreenObject) player).getMidIntersectPoint().getY(), 11, 11, true, true, ((PlayerScreenObject) player).getDegrees(), ((PlayerScreenObject) player).getPlayerColor(), (int) (((PlayerScreenObject) player).getxMovementMultiplier() * ((PlayerScreenObject) player).getDeltaX()), (int) (((PlayerScreenObject) player).getyMovementMultiplier() * ((PlayerScreenObject) player).getDeltaY()));
-                bullet.setIsVisible(true);
-                getObjectsList().get(SCREENOBJLAYER).add(bullet);
-                ((PlayerScreenObject) player).setShooting(false);
-            }
-
+            
             //END GAME CONDITION 
             if (((PlayerScreenObject) player).getHealth() <= 0) {
                 setNextScreen('S');
@@ -592,6 +734,8 @@ public class PlayScreen extends AbstractScreen {
 
     public void moveChunk(int chunkPos, float deltaX, float deltaY) {
 
+        //moves the whole chunk
+        
         for (int i = 0; i < getObjectsList().get(MAPLAYER).size(); i++) {
             for (BasicBrickObject[] slice : ((BasicBackroundObject) getObjectsList().get(MAPLAYER).get(i)).getDimensions()) {
                 for (BasicBrickObject piece : slice) {
@@ -689,7 +833,10 @@ public class PlayScreen extends AbstractScreen {
             int ranx = (int)(Math.random() * getScreenWidth());
             int y = -50;
             
-            AbstractScreenObject enemy = new BasicEnemyScreenObject(ranx, y, 10, 10, screenScrollSpeed, true, false);
+            int ranWidth = (int)((Math.random() * basicEnemyMaxSideDeviation) + minBasicEnemySide);
+            int ranHeight = ranWidth;
+            
+            AbstractScreenObject enemy = new BasicEnemyScreenObject(ranx, y, ranWidth, ranHeight, screenScrollSpeed, true, false);
             getObjectsList().get(SCREENOBJLAYER).add(enemy);
 
         }
@@ -703,7 +850,8 @@ public class PlayScreen extends AbstractScreen {
             int y = -50;
             
             BasicHealthPickupScreenObject pickup = new BasicHealthPickupScreenObject(ranx, y, 26, 26);
-            pickup.setDeltaY(screenScrollSpeed);
+            pickup.setDegrees(DOWN);
+            pickup.setSpeed(screenScrollSpeed);
             getObjectsList().get(SCREENOBJLAYER).add(pickup);
             
         }
@@ -717,7 +865,22 @@ public class PlayScreen extends AbstractScreen {
             int y = -50;
             
             BasicPointPickupScreenObject pickup = new BasicPointPickupScreenObject(ranx, y, 26, 26);
-            pickup.setDeltaY(screenScrollSpeed);
+            pickup.setDegrees(DOWN);
+            pickup.setSpeed(screenScrollSpeed);
+            getObjectsList().get(SCREENOBJLAYER).add(pickup);
+            
+        }
+        if(Math.random() <= threeShotPickupSpawnRate){
+            if (Debug.isEnabled()) {
+                System.out.println("Spawned ThreeShot Pickup!");
+            }
+
+            int ranx = (int)(Math.random() * getScreenWidth());
+            int y = -50;
+            
+            BasicThreeShotPickupScreenObject pickup = new BasicThreeShotPickupScreenObject(ranx, y, 26, 26);
+            pickup.setDegrees(DOWN);
+            pickup.setSpeed(screenScrollSpeed);
             getObjectsList().get(SCREENOBJLAYER).add(pickup);
             
         }
@@ -726,7 +889,8 @@ public class PlayScreen extends AbstractScreen {
 
     public BasicBackroundObject generateBakcroundObject() {
         float tempX = 0, tempY = 0;
-        float tempDX = 0, tempDY = 0;
+        float tempD = 0;
+        float tempSpeed = backroundObjectMinMovementSpeed;
         String spawnLoc = "Something went wrong";
         double randConst = Math.random();
 
@@ -742,73 +906,51 @@ public class PlayScreen extends AbstractScreen {
             //north spawn quad
             tempY = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10;
             tempX = (float) Math.random() * BrickBreakerMain.SCREENWIDTH;
-            randConst = Math.random();
-            //wether deltaX is + or -
-            if (randConst < .5) {
-                tempDX = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            } else {
-                tempDX = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            }
-            //DY must be +
-            tempDY = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+            
+            tempD = DOWN - 45;
+            tempD += (Math.random() * 90);
 
         } else if (randConst <= 2) {
             spawnLoc = "South";
             //south spawn quadrant
             tempY = (BrickBreakerMain.SCREENHEIGHT);
             tempX = (float) Math.random() * BrickBreakerMain.SCREENWIDTH;
-            randConst = Math.random();
-            //wether deltaX is + or -
-            if (randConst < .5) {
-                tempDX = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            } else {
-                tempDX = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            }
-            //DY must be -
-            tempDY = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+            
+            tempD = UP - 45;
+            tempD += (Math.random() * 90);
 
         } else if (randConst <= 3) {
             spawnLoc = "West";
             //west spawn quadrant
             tempX = -(BackroundMinDimension + backroundMaxDimensionDeviation) * 10;
             tempY = (float) Math.random() * BrickBreakerMain.SCREENHEIGHT;
-            randConst = Math.random();
-            //wether deltaX is + or -
-            if (randConst < .5) {
-                tempDY = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            } else {
-                tempDY = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            }
-            //DX must be +
-            tempDX = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+            
+            tempD = RIGHT - 45;
+            tempD += (Math.random() * 90);
 
         } else if (randConst <= 4) {
             spawnLoc = "East";
             //east spawn quadrant
             tempX = BrickBreakerMain.SCREENWIDTH;
             tempY = (float) Math.random() * BrickBreakerMain.SCREENHEIGHT;
-            randConst = Math.random();
-            //wether deltaX is + or -
-            if (randConst < .5) {
-                tempDY = ((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            } else {
-                tempDY = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed) / 2;
-            }
-            //DX must be -
-            tempDX = -((float) (Math.random() * backroundObjectMaxMovementSpeedDeviation) + backroundObjectMinMovementSpeed);
+            
+            tempD = LEFT - 45;
+            tempD += (Math.random() * 90);
 
         }
+        
+        tempSpeed += (Math.random() * backroundObjectMaxMovementSpeedDeviation);
 
         BasicBackroundObject newBackObj = new BasicBackroundObject(tempX, tempY, (int) (Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension, (int) (Math.random() * backroundMaxDimensionDeviation) + BackroundMinDimension);
 
-        newBackObj.setDeltaX(tempDX);
-        newBackObj.setDeltaY(tempDY);
+        newBackObj.setDegrees(tempD);
+        newBackObj.setSpeed(tempSpeed);
         newBackObj.setCollision(false);
         newBackObj.setIsVisible(true);
         newBackObj.setInitSpawnLoc(spawnLoc);
 
         if (Debug.isEnabled()) {
-            System.out.println("DX : " + tempDX + " DY : " + tempDY);
+            System.out.println("degrees : " + tempD + " -- Speed : " + tempSpeed);
             System.out.println("Init Spawn Loc : " + spawnLoc);
             System.out.println();
         }

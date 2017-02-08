@@ -10,7 +10,6 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -51,14 +50,21 @@ public abstract class AbstractScreenObject {
             DEBUGID = 5,
             PLAYERSCREENOBJECTID = 6,
             BASICPLAYERBULLETSCREENOBJECTID = 7,
+            BASICENEMYBULLETSCREENOBJECTID = 8,
+            BASICMISSILESCREENOBJECTID = 9,
             BASICPARTICLESYSTEMID = 10,
             BASICPARTICLEID = 11,
             BASICENEMYSCREENOBJECTID = 20,
             BASICHEALTHPICKUPSCREENOBJECTID = 30,
-            BASICPOINTPICKUPSCREENOBJECTID = 31;
+            BASICPOINTPICKUPSCREENOBJECTID = 31,
+            BASICTHREESHOTPICKUPSCREENOBJECTID = 32;
+    
+    public final int LEFT = 180, RIGHT = 0, UP = 90, DOWN = 270;
     
     private int width, height, layer;
     private boolean collision, Fading;
+    //for direction you are facing
+    private float degrees, speed, oldDegrees;
     //set default color
     private Color color = Color.CYAN;
     private boolean isVisible, acceptingInput, delayInput; 
@@ -123,7 +129,7 @@ public abstract class AbstractScreenObject {
     public AbstractScreenObject(){
         
         
-        
+        speed = 0;
         x = 0;
         y = 0;
         initX = x;
@@ -152,6 +158,21 @@ public abstract class AbstractScreenObject {
     
     //movement methods
     //------------------------------------------------------------------
+    
+    public void movementHandler(){
+        if(getDegrees()<0)
+            setDegrees(360+getDegrees());
+        if(getDegrees()>360)
+            setDegrees(getDegrees() - 360);
+        if (getDegrees() != getOldDegrees()) {
+            setDeltaX((float) Math.cos(Math.toRadians(degrees)));
+            //bc of inverted Y axis bullshit
+            setDeltaY(-(float) Math.sin(Math.toRadians(degrees)));
+        }
+        oldDegrees = getDegrees();
+        move();
+    }
+    
     public abstract void move();
     
     public void moveXMultiply(float dX){
@@ -539,6 +560,54 @@ public abstract class AbstractScreenObject {
         Shape rotatedShape = at.createTransformedShape(getMyShape());
         setMyShape(rotatedShape);    
     } 
+    
+    public float getDegreesToRotate(AbstractScreenObject target){
+        
+        float tY = (float)target.getMyShape().getBounds2D().getCenterY(), tX = (float)target.getMyShape().getBounds2D().getCenterX(), degToT, xSide, ySide, currentDeg = getDegrees(), finalDeg;
+        xSide = tX - getX();
+        //y goes down so its weird
+        ySide = getY() - tY;
+        //degToT = (float)Math.toDegrees(Math.atan2(xSide, ySide));
+        
+        //Q1 & 4
+        if(xSide >= 0){
+            //if in Q1
+            if(ySide >= 0){
+                degToT = (float)Math.toDegrees(Math.atan(ySide/xSide));
+            }
+            //if in Q4
+            else{
+                degToT = (float)Math.toDegrees(Math.atan(ySide/xSide));
+            }
+        }
+        //Q2 & 3
+        else{
+            //if in Q2
+            if(ySide >= 0){
+                degToT = 180 + (float)Math.toDegrees(Math.atan(ySide/xSide));
+            }
+            //if in Q3
+            else{
+                degToT = 180 + (float)Math.toDegrees(Math.atan(ySide/xSide));
+            }
+        }
+        
+        finalDeg = degToT - currentDeg;
+        
+        if(finalDeg > 180){
+            finalDeg = -360 + finalDeg;
+        } else if(finalDeg < -180){
+            finalDeg = 360 + finalDeg;
+        }
+        
+        //turn it into a 360 angle if negative
+        /*if(degToT < 0){
+            degToT = 360 + degToT;
+        }
+        */
+        return (finalDeg);
+        
+    }
 
     public BasicParticleSystem getParticleSys() {
         return particleSys;
@@ -582,6 +651,26 @@ public abstract class AbstractScreenObject {
 
     public float getbDif() {
         return bDif;
+    }
+
+    public float getDegrees() {
+        return degrees;
+    }
+
+    public void setDegrees(float degrees) {
+        this.degrees = degrees;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public float getOldDegrees() {
+        return oldDegrees;
     }
     
     

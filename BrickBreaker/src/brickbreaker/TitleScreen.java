@@ -48,6 +48,7 @@ public class TitleScreen extends AbstractScreen{
         //adds screen objects
         AbstractScreenObject tempOb;
         tempOb = new MenuSelectorIcon(320, getHeight() / 2, 10, 10, 4, Color.WHITE, true, true);
+        tempOb.setSpeed(0);
         addToObjectsArray(SCREENOBJLAYER, tempOb);
         
     }
@@ -57,8 +58,11 @@ public class TitleScreen extends AbstractScreen{
     @Override
     public void runLogic() {
         timeAtScreen = System.nanoTime();
+        
         //sets input list
-        setInputList(handleInput(getInputList()));
+        delayInputManager();
+        handleInput(getInputList());
+        
         //updates mouse pos
         getDebug().setMouseX(getMouseX());
         getDebug().setMouseY(getMouseY());
@@ -68,8 +72,6 @@ public class TitleScreen extends AbstractScreen{
         
         //moves all screen objects
         moveScreenObjects();
-        
-        delayInputManager();
         
     }
 

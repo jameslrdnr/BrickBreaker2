@@ -5,7 +5,6 @@
  */
 package screenObjects;
 
-import brickbreaker.AbstractScreen;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -53,7 +52,7 @@ public class BasicBackroundObject extends AbstractScreenObject{
         
         smoothPasses = (int)(Math.random() * maxSmoothPassDif) + minSmoothPasses;
         
-        setCollisionShape(new Rectangle((int)getX(), (int)getY(), getWidth(), getHeight()));
+        setCollisionShape(new Rectangle((int)getX(), (int)getY(), getWidth() * 10, getHeight() * 10));
         
         setColor(new Color(Color.PINK.getRGB()));
 
@@ -63,8 +62,8 @@ public class BasicBackroundObject extends AbstractScreenObject{
                 dimensions[x][y] = new BasicBrickObject(getX() + x * 10, getY() + y * 10, 10, 10);
                 dimensions[x][y].setIsVisible(false);
                 dimensions[x][y].setColor(colors[(int)(Math.random() * 5)]);
-                dimensions[x][y].setDeltaX(getDeltaX());
-                dimensions[x][y].setDeltaY(getDeltaY());
+                dimensions[x][y].setDegrees(getDegrees());
+                dimensions[x][y].setSpeed(getSpeed());
                 //sets border of object to open space no matter what
                 if (y == 0 || y == dimensions[x].length - 1) {
                     dimensions[x][y].setColor(Color.red);
@@ -127,15 +126,15 @@ public class BasicBackroundObject extends AbstractScreenObject{
     @Override
     public void move() {
         
-        moveX(getDeltaX());
-        moveY(getDeltaY());
+        moveX(getDeltaX() * getSpeed());
+        moveY(getDeltaY() * getSpeed());
         ((Rectangle)getCollisionShape()).setLocation((int)getX(), (int)getY());
         
         for(BasicBrickObject[] slice : dimensions){
             for(BasicBrickObject piece : slice){
-                piece.setDeltaX(getDeltaX());
-                piece.setDeltaY(getDeltaY());
-                piece.move();
+                piece.setDegrees(getDegrees());
+                piece.setSpeed(getSpeed());
+                piece.movementHandler();
             }
         }
         
@@ -170,6 +169,7 @@ public class BasicBackroundObject extends AbstractScreenObject{
             else
                 g.setColor(Color.RED);
             g.draw(getCollisionShape());
+            g.fillRect((int)getX(), (int)getY(), 5, 5);
         }
         
     }
@@ -179,6 +179,7 @@ public class BasicBackroundObject extends AbstractScreenObject{
         
         if(Debug.isEnabled() && checkIsOffScreen(250)){
             System.out.println("Obj removed : " + getX() + " : " + getY());
+            return true;
         }
         
         //returns true if COMPLETELY out of bounds by 250 units

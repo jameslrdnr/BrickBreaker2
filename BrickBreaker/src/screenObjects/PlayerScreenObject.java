@@ -44,7 +44,7 @@ public class PlayerScreenObject extends AbstractScreenObject {
     int rFade, gFade, bFade, fadeStep, fadeRate;
     
     //sets movement multiplier
-    private int speed;
+    private float speed;
     
     //color used to draw player
     private Color playerColor;
@@ -68,6 +68,12 @@ public class PlayerScreenObject extends AbstractScreenObject {
     //timer used to shoot
     private double shootTimer;
     
+    //is three shot active
+    private boolean threeShot;
+    
+    //number of power up shots
+    private int PowerUpAmmo;
+    
     //all location vars
     private int midPointDistance;
     private Point midIntersectPoint;
@@ -76,7 +82,7 @@ public class PlayerScreenObject extends AbstractScreenObject {
     private float health;
     
     //how far rotated the player should be
-    private float degrees;
+    private float mouseDegrees;
     
     //how far rotated the player currently is be
     private float currentDegreesRotated;
@@ -92,7 +98,10 @@ public class PlayerScreenObject extends AbstractScreenObject {
     private double radius;
     
     //playScreen will use this to designate when to creat a bullet
-    private boolean shooting;
+    private boolean shooting, movingDiag;
+    
+    //janky shit for making the mid intersect point move not brokenly
+    private float cumulativeDX, cumulativeDY;
 
     
        
@@ -103,12 +112,8 @@ public class PlayerScreenObject extends AbstractScreenObject {
     }
 
     public void init() {
-        speed = 2;
-
-        setxMovementMultiplier(speed);
-        setyMovementMultiplier(speed);
-
         
+        speed = 3.5f;
 
         //set to default
         isPlayerColorCycle = false;
@@ -116,13 +121,17 @@ public class PlayerScreenObject extends AbstractScreenObject {
         isPlayerColorFade = false;
         colorTimer = colorTransitionSpeed;
         shootTimer = shootTime;
+        threeShot = false;
         health = maxHealth;
-        degrees = 0f;
+        cumulativeDX = 0;
+        cumulativeDY = 0;
+        mouseDegrees = 0f;
         currentDegreesRotated = 0f;
         degreesToRotate = 0f;
         currentDegreesRotated = 0f;
         mouseX = 0f;
         mouseY = 0f;
+        movingDiag = false;
 
         //option read from options property file
         String colorText = BrickBreakerMain.getOptions().getProperty("playerColor");
@@ -164,10 +173,10 @@ public class PlayerScreenObject extends AbstractScreenObject {
         
         Point topMPoint, bottomRPoint, bottomLPoint;
         
-        bottomLPoint = new Point((int) getX(), (int)(getY() + getHeight()));
-        topMPoint = new Point((int) (getX() + getWidth() /2), (int) getY());
-        bottomRPoint = new Point((int) (getX() + getWidth()), (int)(getY() + getHeight()));
-        midIntersectPoint = new Point((int) (getX() + getWidth() /2), (int) (getY() + midPointDistance));
+        bottomLPoint = new Point((int) super.getX(), (int)(super.getY() + getHeight()));
+        topMPoint = new Point((int) (super.getX() + getWidth() /2), (int) super.getY());
+        bottomRPoint = new Point((int) (super.getX() + getWidth()), (int)(super.getY() + getHeight()));
+        midIntersectPoint = new Point((int) (super.getX() + getWidth() /2), (int) (super.getY() + midPointDistance));
         //creation of arrays containning points for collision
         int[] pointXVals = {(int)bottomLPoint.getX(), (int)topMPoint.getX(), (int)bottomRPoint.getX(), (int)midIntersectPoint.getX()};
         int[] pointYVals = {(int)bottomLPoint.getY(), (int)topMPoint.getY(), (int)bottomRPoint.getY(), (int)midIntersectPoint.getY()};
@@ -181,23 +190,39 @@ public class PlayerScreenObject extends AbstractScreenObject {
         ps.setParticleFade(true);
         ps.setIsVisible(true);
         ps.setPermanent(true);
+        ps.setInheritInertia(true);
         ps.setColor(playerColor);
         //screen scroll speed
         ps.setDeltaYModifier(2f);
         setParticleSys(ps);
+        
+        //makes it so you can do immediate input into the game W/ D or ->
+        setDegrees(1);
 
     }
 
     @Override
     public void move() {
-        //this will break if either delta is not an int, casting will cut decimals
-        midIntersectPoint.translate((int)getDeltaX() * getxMovementMultiplier(), (int)getDeltaY() * getyMovementMultiplier());
-        translateMyShape(getDeltaX() *  getxMovementMultiplier(), getDeltaY() *  getyMovementMultiplier());
-
+        
+        cumulativeDX += getDeltaX() * getSpeed();
+        cumulativeDY += getDeltaY() * getSpeed();
+        if(cumulativeDX >= 1 || cumulativeDX <= -1){
+            midIntersectPoint.translate((int)cumulativeDX, 0);
+            translateMyShape((int)cumulativeDX, 0);
+            cumulativeDX -= (int)cumulativeDX;
+        }
+        if(cumulativeDY >= 1 || cumulativeDY <= -1){
+            midIntersectPoint.translate(0, (int)cumulativeDY);
+            translateMyShape(0, (int)cumulativeDY);
+            cumulativeDY -= (int)cumulativeDY;
+        }
+        
+        
         
         rotateMyShape(degreesToRotate, midIntersectPoint.getX(), midIntersectPoint.getY());
         setCollisionShape(getMyShape());
-        currentDegreesRotated = degrees;
+        currentDegreesRotated = mouseDegrees;
+        setDegrees(currentDegreesRotated - 90);
         
         getParticleSys().setX((float)midIntersectPoint.getX());
         getParticleSys().setY((float)midIntersectPoint.getY());
@@ -214,43 +239,64 @@ public class PlayerScreenObject extends AbstractScreenObject {
                 switch (inputMethod) {
                     case "default": {
                         if (keyPressed == KeyEvent.VK_LEFT || keyPressed == KeyEvent.VK_A) {
-
+                            
                             //not against the wall    
                             if (midIntersectPoint.getX() - radius > 0) {
-                                setDeltaX(-1);
+                                setDegrees(LEFT);
+                                setSpeed(speed);
                             }
                             else{
                                 setDeltaX(0);
                             }
 
-                        } else if (keyPressed == KeyEvent.VK_RIGHT || keyPressed == KeyEvent.VK_D) {
+                        } if (keyPressed == KeyEvent.VK_RIGHT || keyPressed == KeyEvent.VK_D) {
 
                             if (midIntersectPoint.getX() + radius < BrickBreakerMain.SCREENWIDTH) {
-                                setDeltaX(1);
+                                setDegrees(RIGHT);
+                                setSpeed(speed);
                             }
                             else{
                                 setDeltaX(0);
                             }
 
-                        } else if (keyPressed == KeyEvent.VK_UP || keyPressed == KeyEvent.VK_W) {
+                        } if (keyPressed == KeyEvent.VK_UP || keyPressed == KeyEvent.VK_W) {
 
                             if (midIntersectPoint.getY() - radius > 0) {
-                                setDeltaY(-1);
+                                setDegrees(UP);
+                                setSpeed(speed);
                             }
                             else{
                                 setDeltaY(0);
                             }
 
-                        } else if (keyPressed == KeyEvent.VK_DOWN || keyPressed == KeyEvent.VK_S) {
+                        } if (keyPressed == KeyEvent.VK_DOWN || keyPressed == KeyEvent.VK_S) {
 
                             if (midIntersectPoint.getY() + radius < BrickBreakerMain.SCREENHEIGHT) {
-                                setDeltaY(1);
+                                setDegrees(DOWN);
+                                setSpeed(speed);
                             }
                             else{
                                 setDeltaY(0);
                             }
                             
-                        } else if (keyPressed == KeyEvent.VK_SPACE && shootTimer >= shootTime) {
+                        }
+                        if((inputList.contains(KeyEvent.VK_UP) || inputList.contains(KeyEvent.VK_W)) && (inputList.contains(KeyEvent.VK_RIGHT) || inputList.contains(KeyEvent.VK_D))){
+                            setDegrees(UP - 45);
+                            setSpeed(speed);
+                        }
+                        if((inputList.contains(KeyEvent.VK_UP) || inputList.contains(KeyEvent.VK_W)) && (inputList.contains(KeyEvent.VK_LEFT) || inputList.contains(KeyEvent.VK_A))){
+                            setDegrees(UP + 45);
+                            setSpeed(speed);
+                        }
+                        if((inputList.contains(KeyEvent.VK_DOWN) || inputList.contains(KeyEvent.VK_S)) && (inputList.contains(KeyEvent.VK_RIGHT) || inputList.contains(KeyEvent.VK_D))){
+                            setDegrees(DOWN + 45);
+                            setSpeed(speed);
+                        }
+                        if((inputList.contains(KeyEvent.VK_DOWN) || inputList.contains(KeyEvent.VK_S)) && (inputList.contains(KeyEvent.VK_LEFT) || inputList.contains(KeyEvent.VK_A))){
+                            setDegrees(DOWN - 45);
+                            setSpeed(speed);
+                        }
+                        if (keyPressed == KeyEvent.VK_SPACE && shootTimer >= shootTime) {
                             shooting = true;
                             shootTimer = 0;
                         }
@@ -264,16 +310,16 @@ public class PlayerScreenObject extends AbstractScreenObject {
                     case "default": {
                         //for(int keyPressed : )
                         if (keyReleased == KeyEvent.VK_LEFT || keyReleased == KeyEvent.VK_A) {
-                            setDeltaX(0);
+                            setSpeed(0);
 
                         } else if (keyReleased == KeyEvent.VK_RIGHT || keyReleased == KeyEvent.VK_D) {
-                            setDeltaX(0);
+                            setSpeed(0);
 
                         } else if (keyReleased == KeyEvent.VK_UP || keyReleased == KeyEvent.VK_W) {
-                            setDeltaY(0);
+                            setSpeed(0);
 
                         } else if (keyReleased == KeyEvent.VK_DOWN || keyReleased == KeyEvent.VK_S) {
-                            setDeltaY(0);
+                            setSpeed(0);
                         } 
                     }
                 }
@@ -313,19 +359,19 @@ public class PlayerScreenObject extends AbstractScreenObject {
         if (mouseDistanceFromPlayerX < 0) {
             //Q3
             if (mouseDistanceFromPlayerY < 0) {
-                degrees = (float) (Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY)));
+                mouseDegrees = (float) (Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY)));
             } //Q2
             else {
-                degrees = (float) Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY));
+                mouseDegrees = (float) Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY));
             }
         } else //Q4
         if (mouseDistanceFromPlayerY < 0) {
-            degrees = (float) Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY));
+            mouseDegrees = (float) Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY));
         } //Q1
         else {
-            degrees = (float) Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY));
+            mouseDegrees = (float) Math.toDegrees(Math.atan2(mouseDistanceFromPlayerX, mouseDistanceFromPlayerY));
         }
-        degreesToRotate = degrees - currentDegreesRotated;
+        degreesToRotate = mouseDegrees - currentDegreesRotated;
     }
 
     @Override
@@ -392,13 +438,9 @@ public class PlayerScreenObject extends AbstractScreenObject {
         g.setColor(gameColor);
 
     }
-   
-    public int getSpeed() {
-        return speed;
-    }
 
-    public void setSpeed(int speed) {
-        this.speed = speed;
+    public void setSpeedHolder(int speedHolder) {
+        this.speed = speedHolder;
     }
     
      public float getHealth() {
@@ -409,8 +451,26 @@ public class PlayerScreenObject extends AbstractScreenObject {
         this.health = health;
     }
     
+    public void setThreeShot(boolean threeShot){
+        this.threeShot = threeShot;
+    }
+    
+    public void setPowerUpAmmo(int PowerUpAmmo){
+        this.PowerUpAmmo = PowerUpAmmo;
+    }
+    
+    public int getPowerUpAmmo(){
+        return PowerUpAmmo;
+    }
+    
+    public boolean getThreeShot(){
+        return threeShot;
+    }
+    
     public void changeHealth(float changeBy) {
-        this.health += changeBy;
+        if(!Debug.isEnabled()){
+            this.health += changeBy;
+        }
     }
 
     public float getMaxHealth() {
@@ -441,7 +501,17 @@ public class PlayerScreenObject extends AbstractScreenObject {
         return midIntersectPoint;
     }
 
-    public float getDegrees() {
-        return degrees;
+    public float getMouseDegrees() {
+        return mouseDegrees;
+    }
+    
+    @Override
+    public float getX(){
+        return (float)(midIntersectPoint.getX() - getWidth() / 2.0);
+    }
+    
+    @Override
+    public float getY(){
+        return (float)(midIntersectPoint.getY() - getWidth() / 2.0);
     }
 }

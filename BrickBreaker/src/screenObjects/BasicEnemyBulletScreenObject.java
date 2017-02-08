@@ -5,43 +5,33 @@
  */
 package screenObjects;
 
+import brickbreaker.AbstractScreen;
 import brickbreaker.BrickBreakerMain;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static screenObjects.AbstractScreenObject.BASICPLAYERBULLETSCREENOBJECTID;
-import static screenObjects.AbstractScreenObject.rainbowColors;
 
 /**
  *
  * @author ge29779
  */
-public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
+public class BasicEnemyBulletScreenObject extends AbstractScreenObject{
    
-    //what angle is the bullet rotated at
-    private final float degreesToRotate = 10;
-    
     //default bullet damage
     private final int defaultDamage = 5;
     
     //speed of the bullet
-    private final int speed = 10;
+    private final int speed = 4;
     
-    //the name of the shape of the bullet
-    private String shapeName;
-    
-    //color of the bullet
-    private Color color;
-    
-    //color of the player
-    private Color playerColor;
-    
+    //how far off the bullets will aim
+    private final double ranVariance = 30;
     
     //distance out of bounds which will cause bullet to be removed
     private int boundsDistance;
@@ -53,17 +43,17 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
     private int damage;
 
 
-    public BasicPlayerBulletScreenObject() {
+    public BasicEnemyBulletScreenObject() {
         super();
 
         damage = defaultDamage;
         init();
     }
 
-    public BasicPlayerBulletScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput, float playerDegrees, Color playerColor) {
-        super(xTemp, yTemp, widthTemp, heightTemp, BASICPLAYERBULLETSCREENOBJECTID, collisionTemp, acceptingInput);
+    public BasicEnemyBulletScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput) {
+        super(xTemp, yTemp, widthTemp, heightTemp, BASICENEMYBULLETSCREENOBJECTID, collisionTemp, acceptingInput);
         if (Debug.isEnabled()) {
-            System.out.println("Creating Player Bullet at X : " + xTemp + " Y : " + yTemp);
+            System.out.println("Creating Enemy Bullet (id : " + getIdNum() + ") at X : " + xTemp + " Y : " + yTemp);
         }
         
         //this centers the shape
@@ -73,9 +63,8 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
         setY(tempY);
         
         //this should set the x and y movement
-        
         setSpeed(speed);
-        setDegrees(-playerDegrees);
+        setDegrees(DOWN);
         
         if (Debug.isEnabled()) {
             System.out.println("deltaX : " + getDeltaX());
@@ -83,11 +72,44 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
 
         }
         
-        
-        this.playerColor = playerColor;
+        damage = defaultDamage;
+        init();
+    }
+    
+    public BasicEnemyBulletScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, boolean collisionTemp, boolean acceptingInput, float parentSpeed, PlayerScreenObject player) {
+        super(xTemp, yTemp, widthTemp, heightTemp, BASICPLAYERBULLETSCREENOBJECTID, collisionTemp, acceptingInput);
         if (Debug.isEnabled()) {
-            System.out.println("Degrees : " + getDegrees());
-            System.out.println("playerColor : " + this.playerColor.toString());
+            System.out.println("Creating  Enemy Bullet at X : " + xTemp + " Y : " + yTemp);
+        }
+        
+        //this centers the shape
+        float tempX = getX() - getWidth() / 2;
+        float tempY = getY() - getHeight() / 2;
+        setX(tempX);
+        setY(tempY);
+        
+        createDiamond();
+        
+        //this should set the x and y movement
+        setSpeed(speed + parentSpeed);
+        
+        //distance between mouse and player on the x - mouseX - playerX
+        double ranXVariance = Math.pow(-1, (int)(Math.random() * 2)) * Math.random() * ranVariance;
+        float playerDistanceFromBulletX = (float) (player.getMidIntersectPoint().getX() - getMyShape().getBounds2D().getCenterX() + ranXVariance);
+        
+        //distance between mouse and player on the y - mouseY - playerY
+        double ranYVariance = Math.pow(-1, (int)(Math.random() * 2)) * Math.random() * ranVariance;
+        float playerDistanceFromBulletY = - (float) (player.getMidIntersectPoint().getY() - getMyShape().getBounds2D().getCenterY() + ranYVariance);
+        
+        setDegrees((float) (Math.toDegrees(Math.atan2(playerDistanceFromBulletY, playerDistanceFromBulletX))));
+        rotateMyShape(-(getDegrees() - 90), getMyShape().getBounds2D().getCenterX(), getMyShape().getBounds2D().getCenterY());
+        
+        if (Debug.isEnabled()) {
+            System.out.println("deltaX : " + getDeltaX());
+            System.out.println("deltaY : " + getDeltaY());
+            System.out.println("xMovementMultiplier : " + getxMovementMultiplier());
+            System.out.println("yMovementMultiplier : " + getyMovementMultiplier());
+            
         }
         
         damage = defaultDamage;
@@ -96,31 +118,7 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
     
     private void init() {
         
-        this.shapeName = BrickBreakerMain.getOptions().getProperty("bulletShape");
-        if (Debug.isEnabled()) {
-            System.out.println("Shape : " + this.shapeName);
-        }
-        
-        switch(shapeName){
-            case "diamond" : createDiamond(); break;
-            default : createDiamond();
-        }
-        
-        String colorString = BrickBreakerMain.getOptions().getProperty("bulletColor");
-        switch(colorString){
-            case "playerColor" : color = playerColor; break;
-            case "random" : color = getRandomColor(); break;
-            default : try {
-                                Field field = Class.forName("java.awt.Color").getField(colorString.toLowerCase()); // toLowerCase because the color fields are RED or red, not Red
-                                color = (Color) field.get(null);
-                            } catch (Exception ex) {
-                                Logger.getLogger(PlayerScreenObject.class.getName()).log(Level.SEVERE, null, ex);
-                                color = Color.white;
-                            }
-        }
-        if (Debug.isEnabled()) {
-            System.out.println("Color : " + this.color);
-        }
+        setColor(Color.RED);
         
         if(getHeight() >= getWidth()){
             boundsDistance = getHeight();
@@ -137,17 +135,7 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
     
     @Override
     public void move() {
-        //hehehe
-        float cumX = getSpeed() * getDeltaX();
-        float cumY = getSpeed() * getDeltaY();
-        
-        //Just gonna put this here to document the fact that I spent 15 minutes trying to fix the issue that
-        //due to rounding to an integer to pass to translateMyShape, bullets would never hit the mouse directly
-        //then I noticed the parameter was a float :( .... I wrote that method
-        
-        translateMyShape(cumX, cumY);
-        
-        rotateMyShape(degreesToRotate, getMyShape().getBounds2D().getCenterX(), getMyShape().getBounds2D().getCenterY());
+        translateMyShape(getSpeed() * getDeltaX(), getSpeed() * getDeltaY());
         setCollisionShape(getMyShape());
     }
 
@@ -186,9 +174,8 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
     @Override
     public void drawObject(Graphics2D g) {
         
-        Color gameColor = g.getColor();
         
-        g.setColor(color);
+        g.setColor(getColor());
         
         g.fill(getMyShape());
         
@@ -198,18 +185,10 @@ public class BasicPlayerBulletScreenObject extends AbstractScreenObject{
             } else {
                 g.setColor(Color.RED);
             }
-
+        
             g.draw(getCollisionShape());
         }
         
-        g.setColor(gameColor);
-        
-    }
-
-    private Color getRandomColor() {
-        addColors();
-        int ranIndex = (int)(Math.random() * rainbowColors.length);
-        return rainbowColors[ranIndex];
     }
 
     

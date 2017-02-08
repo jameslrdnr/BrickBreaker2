@@ -63,8 +63,8 @@ public class MenuSelectorIcon extends AbstractScreenObject {
     @Override
     public void move() {
         
-        setX(getX() + getDeltaX());
-        setY(getY() + getDeltaY());
+        moveX(getDeltaX() * getSpeed());
+        moveY(getDeltaY() * getSpeed());
         
     }
 

@@ -47,7 +47,7 @@ public class BrickBreakerMain extends JFrame {
     private static Debug debug;
     public static Properties options;
     
-    MasterSound mS= new MasterSound();
+    MasterSound mS;
     
     public BrickBreakerMain(){
         //init the screen
@@ -59,8 +59,6 @@ public class BrickBreakerMain extends JFrame {
         
         pack();
         
-        mS.setVolume();
-        
         FRAMEHEIGHT = SCREENHEIGHT + (SCREENHEIGHT - getContentPane().getHeight());
         FRAMEWIDTH = SCREENWIDTH + (SCREENWIDTH - getContentPane().getWidth());
         
@@ -71,6 +69,9 @@ public class BrickBreakerMain extends JFrame {
         options = new Properties();
         loadOptions();
         
+        mS= new MasterSound();
+        
+        mS.setVolume();
         
         add(currentScreen);
         //NEED TO DO THIS EVERYTIME YOU CHANGE SCREENS FOR INPUT TO WORK

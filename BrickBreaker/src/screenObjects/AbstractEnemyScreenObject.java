@@ -24,7 +24,8 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
     private final int framesPerSecond = 60;
     
     //highest health value
-    private final float maxHealth = 100;
+    private float maxHealth;
+
     
     //variables
     //------------------------------------------------------------------
@@ -34,9 +35,11 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
     
     //timer used to shoot
     private double shootTimer;
+    
+    //should the game spawn a bullet
+    private boolean shooting;
 
     
-
     public void setShootTimer(double shootTimer) {
         this.shootTimer = shootTimer;
     }
@@ -50,20 +53,23 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
         init();
     }
     
-    public AbstractEnemyScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, float backgroundDeltaY, boolean collisionTemp, boolean acceptingInput) {
-        super(xTemp, yTemp, widthTemp, heightTemp, (short) 0, collisionTemp, acceptingInput);
-        setDeltaY(backgroundDeltaY);
+    public AbstractEnemyScreenObject(float xTemp, float yTemp, int widthTemp, int heightTemp, short id, boolean collisionTemp, boolean acceptingInput) {
+        super(xTemp, yTemp, widthTemp, heightTemp, id, collisionTemp, acceptingInput);
         
         init();
     }
     
     private void init() {
-        health = 50;
     }
 
     @Override
     public void move() {
-        translateMyShape(getDeltaX(), getDeltaY());
+        translateMyShape(getDeltaX() * getSpeed(), getDeltaY() * getSpeed());
+        setX((float) getMyShape().getBounds().getX());
+        setY((float) getMyShape().getBounds().getY());
+        
+        setCollisionShape(getMyShape());
+        
     }
     
     @Override
@@ -89,6 +95,10 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
             drawHealth(g);
         }
         
+        if(Debug.isEnabled()){
+            g.setColor(Color.GREEN);
+            g.draw(getCollisionShape());
+        }
     }
 
     private void drawHealth(Graphics2D g) {
@@ -111,7 +121,7 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
 
     @Override
     public boolean shouldDestroyObject() {
-        return checkIsOffScreen(300);
+        return checkIsOffScreen(300) || health <= 0;
     }
     
     
@@ -132,6 +142,11 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
         return maxHealth;
     }
 
+    
+    public void setMaxHealth(float maxHealth) {
+        this.maxHealth = maxHealth;
+    }
+    
     public double getShootTime() {
         return shootTime;
     }
@@ -143,4 +158,13 @@ public abstract class AbstractEnemyScreenObject extends AbstractScreenObject{
     public double getShootTimer() {
         return shootTimer;
     }
+
+    public boolean isShooting() {
+        return shooting;
+    }
+
+    public void setShooting(boolean shooting) {
+        this.shooting = shooting;
+    }
+    
 }

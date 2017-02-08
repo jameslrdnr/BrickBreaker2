@@ -111,9 +111,9 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     
     //draws screen objects in the ScreenObject ArrayList
     public void drawScreenObjects(Graphics2D g){
-        for(ArrayList<AbstractScreenObject> list : getObjectsList()){
-            for(AbstractScreenObject ob : list){
-                ob.drawObject(g);
+        for(int i = 0; i < getObjectsList().size(); i++){
+            for(int j = 0; j < getObjectsList().get(i).size(); j++){
+                getObjectsList().get(i).get(j).drawObject(g);
             }
         }
     }
@@ -148,7 +148,7 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
     public void moveScreenObjects(){
         for (ArrayList<AbstractScreenObject> list : getObjectsList()) {
             for (AbstractScreenObject ob : list) {
-                ob.move();
+                ob.movementHandler();
             }
         }
     }
@@ -230,6 +230,8 @@ public abstract class AbstractScreen extends JPanel implements KeyListener, Mous
 
         if (delayAllInput) {
             inputList.clear();
+            getDumpList().clear();
+            getRemoveList().clear();
         }
 
         //resets dump and remove lists
